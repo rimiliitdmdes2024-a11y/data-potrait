@@ -5,16 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Data Portrait — Who Are You, Really?</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Instrument+Serif:ital@0;1&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 
   :root {
-    --bg: #f5f0e8;
-    --ink: #1a1a1a;
-    --warm: #f0e6d3;
-    --accent1: #ff6b35;
-    --accent2: #4a90d9;
-    --accent3: #7bc67e;
-    --muted: #8a8070;
+    --bg: #f0e8d8;
+    --ink: #1c1917;
+    --muted: #8c7e6e;
+    --online: #c94f2a;
+    --offline: #2e5fa3;
     --card-size: 280px;
   }
 
@@ -28,285 +26,100 @@
     overflow-x: hidden;
   }
 
-  /* ── SCREENS ── */
   .screen {
     display: none;
     min-height: 100vh;
-    position: relative;
+    animation: screenfade 0.3s ease;
   }
   .screen.active { display: flex; }
+
+  @keyframes screenfade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
 
   /* ── INTRO ── */
   #screen-intro {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px 24px;
+    padding: 80px 40px;
     text-align: center;
-    background: var(--bg);
-    position: relative;
-    overflow: hidden;
-  }
-
-  #screen-intro::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image:
-      radial-gradient(circle at 20% 20%, rgba(255,107,53,0.08) 0%, transparent 50%),
-      radial-gradient(circle at 80% 80%, rgba(74,144,217,0.08) 0%, transparent 50%);
-    pointer-events: none;
   }
 
   .intro-eyeball {
-    width: 80px;
-    height: 80px;
-    margin-bottom: 32px;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 48px;
     animation: eyebob 3s ease-in-out infinite;
   }
 
   @keyframes eyebob {
     0%, 100% { transform: translateY(0) rotate(0deg); }
-    33% { transform: translateY(-6px) rotate(-5deg); }
-    66% { transform: translateY(3px) rotate(3deg); }
+    33%       { transform: translateY(-6px) rotate(-5deg); }
+    66%       { transform: translateY(3px) rotate(3deg); }
   }
 
   .intro-title {
-    font-family: 'Instrument Serif', serif;
-    font-size: clamp(2.2rem, 6vw, 4rem);
-    line-height: 1.1;
-    margin-bottom: 16px;
-    letter-spacing: -0.02em;
-  }
-
-  .intro-title em {
+    font-family: 'DM Serif Display', serif;
     font-style: italic;
-    color: var(--accent1);
+    font-size: 80px;
+    line-height: 1;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    margin-bottom: 32px;
   }
 
   .intro-sub {
-    font-size: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
     color: var(--muted);
+    line-height: 2.2;
+    margin-bottom: 56px;
     max-width: 420px;
-    line-height: 1.7;
-    margin-bottom: 40px;
-    letter-spacing: 0.03em;
   }
 
   .intro-meta {
-    font-size: 0.65rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
     color: var(--muted);
-    margin-top: 32px;
-    letter-spacing: 0.05em;
+    margin-top: 64px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
   /* ── BUTTONS ── */
   .btn-primary {
-    background: var(--ink);
-    color: var(--bg);
-    border: none;
-    padding: 14px 36px;
+    background: transparent;
+    color: var(--ink);
+    border: 1.5px solid var(--ink);
+    padding: 12px 32px;
     font-family: 'Space Mono', monospace;
-    font-size: 0.75rem;
+    font-size: 11px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
+    transition: background 0.2s, color 0.2s;
   }
 
-  .btn-primary::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--accent1);
-    transform: translateX(-100%);
-    transition: transform 0.2s;
-    z-index: 0;
-  }
-
-  .btn-primary:hover::after { transform: translateX(0); }
-  .btn-primary span { position: relative; z-index: 1; }
-
-  /* ── QUESTION SCREEN ── */
-  #screen-question {
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 24px;
-    min-height: 100vh;
-  }
-
-  .q-header {
-    width: 100%;
-    max-width: 600px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 48px;
-  }
-
-  .q-progress-track {
-    flex: 1;
-    height: 2px;
-    background: rgba(26,26,26,0.12);
-    position: relative;
-  }
-
-  .q-progress-fill {
-    height: 100%;
-    background: var(--ink);
-    transition: width 0.4s ease;
-  }
-
-  .q-counter {
-    font-size: 0.65rem;
-    color: var(--muted);
-    letter-spacing: 0.08em;
-    white-space: nowrap;
-  }
-
-  .q-self-label {
-    font-size: 0.6rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 12px;
-    width: 100%;
-    max-width: 600px;
-  }
-
-  .q-self-label.online { color: var(--accent1); }
-  .q-self-label.offline { color: var(--accent2); }
-  .q-self-label.constant { color: var(--accent3); }
-
-  .q-text {
-    font-family: 'Instrument Serif', serif;
-    font-size: clamp(1.4rem, 4vw, 2rem);
-    line-height: 1.3;
-    max-width: 600px;
-    width: 100%;
-    margin-bottom: 40px;
-    letter-spacing: -0.01em;
-  }
-
-  /* Option grid */
-  .q-options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    max-width: 600px;
-    width: 100%;
-    margin-bottom: 32px;
-  }
-
-  .q-option {
-    padding: 10px 18px;
-    border: 1.5px solid rgba(26,26,26,0.25);
-    background: transparent;
-    font-family: 'Space Mono', monospace;
-    font-size: 0.7rem;
-    cursor: pointer;
-    transition: all 0.15s;
-    color: var(--ink);
-    letter-spacing: 0.02em;
-    position: relative;
-  }
-
-  .q-option:hover {
-    border-color: var(--ink);
-    background: rgba(26,26,26,0.04);
-  }
-
-  .q-option.selected {
+  .btn-primary:hover {
     background: var(--ink);
     color: var(--bg);
-    border-color: var(--ink);
-  }
-
-  /* Scale input */
-  .q-scale {
-    width: 100%;
-    max-width: 600px;
-    margin-bottom: 32px;
-  }
-
-  .q-scale input[type=range] {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 2px;
-    background: rgba(26,26,26,0.2);
-    outline: none;
-    margin: 16px 0;
-  }
-
-  .q-scale input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 18px;
-    height: 18px;
-    background: var(--ink);
-    cursor: pointer;
-    border-radius: 0;
-    transition: transform 0.15s;
-  }
-
-  .q-scale input[type=range]::-webkit-slider-thumb:hover {
-    transform: scale(1.3);
-  }
-
-  .q-scale-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.6rem;
-    color: var(--muted);
-    letter-spacing: 0.04em;
-  }
-
-  /* Text input */
-  .q-text-input {
-    width: 100%;
-    max-width: 600px;
-    border: none;
-    border-bottom: 1.5px solid rgba(26,26,26,0.3);
-    padding: 12px 0;
-    font-family: 'Instrument Serif', serif;
-    font-size: 1.3rem;
-    background: transparent;
-    color: var(--ink);
-    outline: none;
-    transition: border-color 0.2s;
-    margin-bottom: 32px;
-  }
-
-  .q-text-input:focus {
-    border-color: var(--ink);
-  }
-
-  .q-text-input::placeholder {
-    color: var(--muted);
-    font-style: italic;
-  }
-
-  .q-nav {
-    display: flex;
-    gap: 12px;
-    max-width: 600px;
-    width: 100%;
-    justify-content: flex-end;
   }
 
   .btn-ghost {
     background: transparent;
-    border: 1.5px solid rgba(26,26,26,0.2);
+    border: 1.5px solid rgba(28,25,23,0.25);
     color: var(--muted);
-    padding: 10px 24px;
+    padding: 12px 32px;
     font-family: 'Space Mono', monospace;
-    font-size: 0.7rem;
+    font-size: 11px;
     cursor: pointer;
-    transition: all 0.15s;
-    letter-spacing: 0.05em;
+    transition: border-color 0.2s, color 0.2s;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
   .btn-ghost:hover {
@@ -314,17 +127,233 @@
     color: var(--ink);
   }
 
+  /* ── QUESTION SCREEN ── */
+  #screen-question {
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 40px 64px;
+    min-height: 100vh;
+  }
+
+  .q-top-bar {
+    width: 100%;
+    max-width: 960px;
+    margin-bottom: 72px;
+  }
+
+  .q-round-label {
+    display: block;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  #q-counter::before { content: 'ROUND '; }
+
+  .q-progress-track {
+    width: 100%;
+    height: 1px;
+    background: rgba(28,25,23,0.15);
+    position: relative;
+  }
+
+  .q-progress-fill {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    background: var(--ink);
+    transition: width 0.4s ease;
+  }
+
+  /* Hidden; exists only so CSS :has() can read which self is active */
+  .q-self-label { display: none; }
+
+  /* Two-column grid */
+  .q-body {
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    grid-template-rows: auto 1fr;
+    max-width: 960px;
+    width: 100%;
+    flex: 1;
+  }
+
+  .q-col-header {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    padding-bottom: 24px;
+  }
+
+  .q-col-header.online  { grid-column: 1; grid-row: 1; color: var(--online);  padding-right: 48px; }
+  .q-col-header.offline { grid-column: 3; grid-row: 1; color: var(--offline); padding-left:  48px; }
+
+  .q-col-divider {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    background: rgba(28,25,23,0.2);
+  }
+
+  .q-question-block {
+    grid-column: 1;
+    grid-row: 2;
+    padding-right: 48px;
+  }
+
+  #screen-question:has(.q-self-label.offline) .q-question-block {
+    grid-column: 3;
+    padding-right: 0;
+    padding-left: 48px;
+  }
+
+  /* Constant: single centred column */
+  #screen-question:has(.q-self-label.constant) .q-body {
+    grid-template-columns: 1fr;
+    max-width: 560px;
+  }
+
+  #screen-question:has(.q-self-label.constant) .q-col-header,
+  #screen-question:has(.q-self-label.constant) .q-col-divider {
+    display: none;
+  }
+
+  #screen-question:has(.q-self-label.constant) .q-question-block {
+    grid-column: 1;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .q-constant-eyebrow {
+    display: none;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  #screen-question:has(.q-self-label.constant) .q-constant-eyebrow { display: block; }
+
+  .q-text {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    line-height: 1.4;
+    color: var(--ink);
+    margin-bottom: 32px;
+  }
+
+  #screen-question:has(.q-self-label.constant) .q-text {
+    font-style: italic;
+    font-size: 28px;
+  }
+
+  /* Option chips */
+  .q-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 40px;
+  }
+
+  .q-option {
+    padding: 8px 16px;
+    border: 1px solid rgba(28,25,23,0.25);
+    background: transparent;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+    color: var(--ink);
+  }
+
+  .q-option:hover   { border-color: var(--ink); }
+  .q-option.selected { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  /* Scale */
+  .q-scale { width: 100%; margin-bottom: 40px; }
+
+  .q-scale input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 1px;
+    background: rgba(28,25,23,0.2);
+    outline: none;
+    margin: 20px 0;
+  }
+
+  .q-scale input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--ink);
+    cursor: pointer;
+    border-radius: 0;
+    transition: transform 0.15s;
+  }
+
+  .q-scale input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+  .q-scale-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    font-family: 'Space Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+  }
+
+  /* Text input (constant question) */
+  .q-text-input {
+    width: 100%;
+    max-width: 480px;
+    border: none;
+    border-bottom: 1px solid var(--ink);
+    padding: 12px 0;
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 20px;
+    background: transparent;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+
+  .q-text-input::placeholder { color: var(--muted); font-style: italic; }
+  .q-text-input:focus { border-color: var(--ink); }
+
+  .q-nav {
+    display: flex;
+    gap: 12px;
+    max-width: 960px;
+    width: 100%;
+    justify-content: center;
+    margin-top: 56px;
+  }
+
   /* ── GENERATING ── */
   #screen-generating {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 24px;
+    gap: 32px;
   }
 
   .gen-text {
-    font-family: 'Instrument Serif', serif;
-    font-size: 1.5rem;
+    font-family: 'DM Serif Display', serif;
+    font-size: 24px;
     font-style: italic;
     color: var(--muted);
     animation: pulse 1.5s ease-in-out infinite;
@@ -332,19 +361,15 @@
 
   @keyframes pulse {
     0%, 100% { opacity: 0.4; }
-    50% { opacity: 1; }
+    50%       { opacity: 1; }
   }
 
-  .gen-dots {
-    display: flex;
-    gap: 8px;
-  }
+  .gen-dots { display: flex; gap: 10px; }
 
   .gen-dot {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     background: var(--ink);
-    border-radius: 50%;
     animation: dotbounce 1.2s ease-in-out infinite;
   }
 
@@ -353,48 +378,49 @@
 
   @keyframes dotbounce {
     0%, 100% { transform: translateY(0); opacity: 0.3; }
-    50% { transform: translateY(-8px); opacity: 1; }
+    50%       { transform: translateY(-8px); opacity: 1; }
   }
 
   /* ── PORTRAIT SCREEN ── */
   #screen-portrait {
     flex-direction: column;
     align-items: center;
-    padding: 48px 24px 64px;
-    gap: 0;
+    padding: 80px 40px 80px;
   }
 
   .portrait-title {
-    font-family: 'Instrument Serif', serif;
-    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 40px;
     text-align: center;
-    margin-bottom: 8px;
-    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    color: var(--ink);
   }
 
   .portrait-subtitle {
-    font-size: 0.65rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
     color: var(--muted);
     letter-spacing: 0.12em;
     text-transform: uppercase;
     text-align: center;
-    margin-bottom: 48px;
+    margin-bottom: 64px;
   }
 
   .portrait-pair {
     display: flex;
-    gap: 40px;
+    gap: 64px;
     align-items: flex-start;
     flex-wrap: wrap;
     justify-content: center;
-    margin-bottom: 40px;
+    margin-bottom: 48px;
   }
 
   .portrait-card-wrap {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
     cursor: pointer;
     transition: transform 0.2s;
   }
@@ -402,14 +428,14 @@
   .portrait-card-wrap:hover { transform: translateY(-4px); }
 
   .portrait-card-label {
-    font-size: 0.6rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--muted);
   }
 
-  .portrait-card-label.online { color: var(--accent1); }
-  .portrait-card-label.offline { color: var(--accent2); }
+  .portrait-card-label.online  { color: var(--online); }
+  .portrait-card-label.offline { color: var(--offline); }
 
   .portrait-svg-wrap {
     position: relative;
@@ -417,10 +443,7 @@
     height: var(--card-size);
   }
 
-  .portrait-svg-wrap svg {
-    width: 100%;
-    height: 100%;
-  }
+  .portrait-svg-wrap svg { width: 100%; height: 100%; }
 
   .eyes-container {
     position: absolute;
@@ -433,71 +456,61 @@
 
   .eyes-container.visible { opacity: 1; }
 
-  .portrait-card-hint {
-    font-size: 0.6rem;
-    color: var(--muted);
-    letter-spacing: 0.04em;
-    text-align: center;
-    font-style: italic;
-  }
-
-  .constant-mark-label {
-    font-size: 0.65rem;
-    color: var(--muted);
-    text-align: center;
-    max-width: 480px;
-    line-height: 1.6;
-    margin-bottom: 32px;
-    letter-spacing: 0.02em;
-  }
-
-  .constant-mark-label strong {
-    color: var(--ink);
-    font-weight: 700;
-  }
-
-  .portrait-actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: 24px;
-  }
-
   .eyes-instruction {
-    font-family: 'Instrument Serif', serif;
-    font-size: 1.1rem;
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
     font-style: italic;
     text-align: center;
     color: var(--muted);
-    margin-bottom: 32px;
+    margin-bottom: 48px;
     max-width: 400px;
   }
 
-  /* ── TRANSITIONS ── */
-  .screen {
-    animation: screenfade 0.4s ease;
+  .constant-mark-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-align: center;
+    max-width: 480px;
+    line-height: 1.8;
+    margin-bottom: 48px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
-  @keyframes screenfade {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+  .constant-mark-label strong { color: var(--ink); }
+
+  .portrait-actions {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
-  /* Noise texture overlay */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0.4;
-  }
-
-  @media (max-width: 640px) {
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
     :root { --card-size: 240px; }
-    .portrait-pair { gap: 24px; }
+
+    .intro-title { font-size: 52px; }
+
+    #screen-question { padding: 40px 24px 48px; }
+
+    .q-top-bar { margin-bottom: 48px; }
+
+    .q-body { grid-template-columns: 1fr; }
+
+    .q-col-divider { display: none; }
+
+    .q-col-header.online  { grid-column: 1; padding-right: 0; }
+    .q-col-header.offline { grid-column: 1; grid-row: 1; padding-left: 0; display: none; }
+
+    #screen-question:has(.q-self-label.offline) .q-col-header.offline { display: block; }
+    #screen-question:has(.q-self-label.offline) .q-col-header.online  { display: none; }
+
+    .q-question-block        { grid-column: 1 !important; padding: 0 !important; }
+    .q-nav                   { max-width: 100%; }
+
+    .portrait-pair { gap: 32px; }
   }
 </style>
 </head>
@@ -506,35 +519,48 @@
 <!-- ══ INTRO ══ -->
 <div id="screen-intro" class="screen active">
   <svg class="intro-eyeball" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="40" cy="40" rx="36" ry="36" fill="white" stroke="#1a1a1a" stroke-width="3"/>
-    <ellipse cx="40" cy="40" rx="16" ry="16" fill="#1a1a1a"/>
+    <ellipse cx="40" cy="40" rx="36" ry="36" fill="white" stroke="#1c1917" stroke-width="3"/>
+    <ellipse cx="40" cy="40" rx="16" ry="16" fill="#1c1917"/>
     <ellipse cx="46" cy="34" rx="5" ry="5" fill="white"/>
     <ellipse cx="34" cy="44" rx="2" ry="2" fill="white"/>
   </svg>
-  <h1 class="intro-title">data <em>portrait</em></h1>
+  <h1 class="intro-title">data portrait</h1>
   <p class="intro-sub">
     Answer 12 questions about who you are online and offline.<br>
     Get two cards. No labels. No scores.<br>
     Just you — rendered.
   </p>
-  <button class="btn-primary" onclick="startQuiz()"><span>begin →</span></button>
+  <button class="btn-primary" onclick="startQuiz()">begin →</button>
   <p class="intro-meta">A project by Rimil &nbsp;·&nbsp; Ctrl Alt Reflect</p>
 </div>
 
 <!-- ══ QUESTION ══ -->
 <div id="screen-question" class="screen">
-  <div class="q-header">
+  <div class="q-top-bar">
+    <span class="q-round-label" id="q-counter">1 / 11</span>
     <div class="q-progress-track">
       <div class="q-progress-fill" id="progress-fill" style="width:0%"></div>
     </div>
-    <div class="q-counter" id="q-counter">1 / 12</div>
   </div>
-  <div class="q-self-label" id="q-self-label">online self</div>
-  <div class="q-text" id="q-text"></div>
-  <div id="q-input-area"></div>
+
+  <!-- Hidden — read only by CSS :has() to place question in correct column -->
+  <div class="q-self-label" id="q-self-label"></div>
+
+  <div class="q-body">
+    <div class="q-col-header online">Online Self</div>
+    <div class="q-col-divider"></div>
+    <div class="q-col-header offline">Offline Self</div>
+
+    <div class="q-question-block">
+      <div class="q-constant-eyebrow">The Constant</div>
+      <div class="q-text" id="q-text"></div>
+      <div id="q-input-area"></div>
+    </div>
+  </div>
+
   <div class="q-nav">
     <button class="btn-ghost" id="btn-back" onclick="prevQuestion()" style="display:none">← back</button>
-    <button class="btn-primary" id="btn-next" onclick="nextQuestion()"><span>next →</span></button>
+    <button class="btn-primary" id="btn-next" onclick="nextQuestion()">next →</button>
   </div>
 </div>
 
@@ -552,10 +578,6 @@
 <div id="screen-portrait" class="screen">
   <h2 class="portrait-title">your data portrait</h2>
   <p class="portrait-subtitle">two selves · one person</p>
-
-  <p class="eyes-instruction" id="eyes-instruction">
-    tap the card that feels more like home
-  </p>
 
   <div class="portrait-pair">
     <div class="portrait-card-wrap" id="card-online-wrap" onclick="placeEyes('online')">
@@ -579,11 +601,15 @@
     </div>
   </div>
 
+  <p class="eyes-instruction" id="eyes-instruction">
+    tap the card that feels more like home
+  </p>
+
   <p class="constant-mark-label" id="constant-label"></p>
 
   <div class="portrait-actions" id="portrait-actions" style="display:none">
     <button class="btn-ghost" onclick="restartQuiz()">start over</button>
-    <button class="btn-primary" onclick="downloadPortrait()"><span>save portrait</span></button>
+    <button class="btn-primary" onclick="downloadPortrait()">save portrait</button>
   </div>
 </div>
 
