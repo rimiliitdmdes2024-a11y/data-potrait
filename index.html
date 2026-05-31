@@ -1,1178 +1,1033 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Data Portrait — Who Are You, Really?</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
-
-  :root {
-    --bg: #f0e8d8;
-    --ink: #1c1917;
-    --muted: #8c7e6e;
-    --online: #c94f2a;
-    --offline: #2e5fa3;
-    --card-size: 280px;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: 'Space Mono', monospace;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  .screen {
-    display: none;
-    min-height: 100vh;
-    animation: screenfade 0.3s ease;
-  }
-  .screen.active { display: flex; }
-
-  @keyframes screenfade {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
-
-  /* ── INTRO ── */
-  #screen-intro {
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 80px 40px;
-    text-align: center;
-  }
-
-  .intro-eyeball {
-    width: 64px;
-    height: 64px;
-    margin-bottom: 48px;
-    animation: eyebob 3s ease-in-out infinite;
-  }
-
-  @keyframes eyebob {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    33%       { transform: translateY(-6px) rotate(-5deg); }
-    66%       { transform: translateY(3px) rotate(3deg); }
-  }
-
-  .intro-title {
-    font-family: 'DM Serif Display', serif;
-    font-style: italic;
-    font-size: 80px;
-    line-height: 1;
-    color: var(--ink);
-    letter-spacing: -0.02em;
-    margin-bottom: 32px;
-  }
-
-  .intro-sub {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--muted);
-    line-height: 2.2;
-    margin-bottom: 56px;
-    max-width: 420px;
-  }
-
-  .intro-meta {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    margin-top: 64px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  /* ── BUTTONS ── */
-  .btn-primary {
-    background: transparent;
-    color: var(--ink);
-    border: 1.5px solid var(--ink);
-    padding: 12px 32px;
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-  }
-
-  .btn-primary:hover {
-    background: var(--ink);
-    color: var(--bg);
-  }
-
-  .btn-ghost {
-    background: transparent;
-    border: 1.5px solid rgba(28,25,23,0.25);
-    color: var(--muted);
-    padding: 12px 32px;
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    cursor: pointer;
-    transition: border-color 0.2s, color 0.2s;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .btn-ghost:hover {
-    border-color: var(--ink);
-    color: var(--ink);
-  }
-
-  /* ── QUESTION SCREEN ── */
-  #screen-question {
-    flex-direction: column;
-    align-items: center;
-    padding: 48px 40px 64px;
-    min-height: 100vh;
-  }
-
-  .q-top-bar {
-    width: 100%;
-    max-width: 960px;
-    margin-bottom: 72px;
-  }
-
-  .q-round-label {
-    display: block;
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--muted);
-    margin-bottom: 12px;
-  }
-
-  #q-counter::before { content: 'ROUND '; }
-
-  .q-progress-track {
-    width: 100%;
-    height: 1px;
-    background: rgba(28,25,23,0.15);
-    position: relative;
-  }
-
-  .q-progress-fill {
-    position: absolute;
-    top: 0; left: 0;
-    height: 100%;
-    background: var(--ink);
-    transition: width 0.4s ease;
-  }
-
-  /* Hidden; exists only so CSS :has() can read which self is active */
-  .q-self-label { display: none; }
-
-  /* Two-column grid */
-  .q-body {
-    display: grid;
-    grid-template-columns: 1fr 1px 1fr;
-    grid-template-rows: auto 1fr;
-    max-width: 960px;
-    width: 100%;
-    flex: 1;
-  }
-
-  .q-col-header {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    padding-bottom: 24px;
-  }
-
-  .q-col-header.online  { grid-column: 1; grid-row: 1; color: var(--online);  padding-right: 48px; }
-  .q-col-header.offline { grid-column: 3; grid-row: 1; color: var(--offline); padding-left:  48px; }
-
-  .q-col-divider {
-    grid-column: 2;
-    grid-row: 1 / 3;
-    background: rgba(28,25,23,0.2);
-  }
-
-  .q-question-block {
-    grid-column: 1;
-    grid-row: 2;
-    padding-right: 48px;
-  }
-
-  #screen-question:has(.q-self-label.offline) .q-question-block {
-    grid-column: 3;
-    padding-right: 0;
-    padding-left: 48px;
-  }
-
-  /* Constant: single centred column */
-  #screen-question:has(.q-self-label.constant) .q-body {
-    grid-template-columns: 1fr;
-    max-width: 560px;
-  }
-
-  #screen-question:has(.q-self-label.constant) .q-col-header,
-  #screen-question:has(.q-self-label.constant) .q-col-divider {
-    display: none;
-  }
-
-  #screen-question:has(.q-self-label.constant) .q-question-block {
-    grid-column: 1;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .q-constant-eyebrow {
-    display: none;
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--muted);
-    margin-bottom: 20px;
-  }
-
-  #screen-question:has(.q-self-label.constant) .q-constant-eyebrow { display: block; }
-
-  .q-text {
-    font-family: 'DM Serif Display', serif;
-    font-size: 22px;
-    line-height: 1.4;
-    color: var(--ink);
-    margin-bottom: 32px;
-  }
-
-  #screen-question:has(.q-self-label.constant) .q-text {
-    font-style: italic;
-    font-size: 28px;
-  }
-
-  /* Option chips */
-  .q-options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 40px;
-  }
-
-  .q-option {
-    padding: 8px 16px;
-    border: 1px solid rgba(28,25,23,0.25);
-    background: transparent;
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    cursor: pointer;
-    transition: border-color 0.2s, background 0.2s, color 0.2s;
-    color: var(--ink);
-  }
-
-  .q-option:hover   { border-color: var(--ink); }
-  .q-option.selected { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-
-  /* Scale */
-  .q-scale { width: 100%; margin-bottom: 40px; }
-
-  .q-scale input[type=range] {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 1px;
-    background: rgba(28,25,23,0.2);
-    outline: none;
-    margin: 20px 0;
-  }
-
-  .q-scale input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
-    background: var(--ink);
-    cursor: pointer;
-    border-radius: 0;
-    transition: transform 0.15s;
-  }
-
-  .q-scale input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.3); }
-
-  .q-scale-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 9px;
-    font-family: 'Space Mono', monospace;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--muted);
-  }
-
-  /* Text input (constant question) */
-  .q-text-input {
-    width: 100%;
-    max-width: 480px;
-    border: none;
-    border-bottom: 1px solid var(--ink);
-    padding: 12px 0;
-    font-family: 'DM Serif Display', serif;
-    font-style: italic;
-    font-size: 20px;
-    background: transparent;
-    color: var(--ink);
-    outline: none;
-    transition: border-color 0.2s;
-    margin-bottom: 40px;
-    text-align: center;
-  }
-
-  .q-text-input::placeholder { color: var(--muted); font-style: italic; }
-  .q-text-input:focus { border-color: var(--ink); }
-
-  .q-nav {
-    display: flex;
-    gap: 12px;
-    max-width: 960px;
-    width: 100%;
-    justify-content: center;
-    margin-top: 56px;
-  }
-
-  /* ── GENERATING ── */
-  #screen-generating {
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 32px;
-  }
-
-  .gen-text {
-    font-family: 'DM Serif Display', serif;
-    font-size: 24px;
-    font-style: italic;
-    color: var(--muted);
-    animation: pulse 1.5s ease-in-out infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 0.4; }
-    50%       { opacity: 1; }
-  }
-
-  .gen-dots { display: flex; gap: 10px; }
-
-  .gen-dot {
-    width: 6px;
-    height: 6px;
-    background: var(--ink);
-    animation: dotbounce 1.2s ease-in-out infinite;
-  }
-
-  .gen-dot:nth-child(2) { animation-delay: 0.2s; }
-  .gen-dot:nth-child(3) { animation-delay: 0.4s; }
-
-  @keyframes dotbounce {
-    0%, 100% { transform: translateY(0); opacity: 0.3; }
-    50%       { transform: translateY(-8px); opacity: 1; }
-  }
-
-  /* ── PORTRAIT SCREEN ── */
-  #screen-portrait {
-    flex-direction: column;
-    align-items: center;
-    padding: 80px 40px 80px;
-  }
-
-  .portrait-title {
-    font-family: 'DM Serif Display', serif;
-    font-style: italic;
-    font-size: 40px;
-    text-align: center;
-    margin-bottom: 16px;
-    color: var(--ink);
-  }
-
-  .portrait-subtitle {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    text-align: center;
-    margin-bottom: 64px;
-  }
-
-  .portrait-pair {
-    display: flex;
-    gap: 64px;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-bottom: 48px;
-  }
-
-  .portrait-card-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    cursor: pointer;
-    transition: transform 0.2s;
-  }
-
-  .portrait-card-wrap:hover { transform: translateY(-4px); }
-
-  .portrait-card-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-  }
-
-  .portrait-card-label.online  { color: var(--online); }
-  .portrait-card-label.offline { color: var(--offline); }
-
-  .portrait-svg-wrap {
-    position: relative;
-    width: var(--card-size);
-    height: var(--card-size);
-  }
-
-  .portrait-svg-wrap svg { width: 100%; height: 100%; }
-
-  .eyes-container {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.4s;
-  }
-
-  .eyes-container.visible { opacity: 1; }
-
-  .eyes-instruction {
-    font-family: 'DM Serif Display', serif;
-    font-size: 18px;
-    font-style: italic;
-    text-align: center;
-    color: var(--muted);
-    margin-bottom: 48px;
-    max-width: 400px;
-  }
-
-  .constant-mark-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    text-align: center;
-    max-width: 480px;
-    line-height: 1.8;
-    margin-bottom: 48px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-
-  .constant-mark-label strong { color: var(--ink); }
-
-  .portrait-actions {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 768px) {
-    :root { --card-size: 240px; }
-
-    .intro-title { font-size: 52px; }
-
-    #screen-question { padding: 40px 24px 48px; }
-
-    .q-top-bar { margin-bottom: 48px; }
-
-    .q-body { grid-template-columns: 1fr; }
-
-    .q-col-divider { display: none; }
-
-    .q-col-header.online  { grid-column: 1; padding-right: 0; }
-    .q-col-header.offline { grid-column: 1; grid-row: 1; padding-left: 0; display: none; }
-
-    #screen-question:has(.q-self-label.offline) .q-col-header.offline { display: block; }
-    #screen-question:has(.q-self-label.offline) .q-col-header.online  { display: none; }
-
-    .q-question-block        { grid-column: 1 !important; padding: 0 !important; }
-    .q-nav                   { max-width: 100%; }
-
-    .portrait-pair { gap: 32px; }
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Online Twin</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Nanum+Pen+Script&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:     #f8f0dd;
+      --orange: #f16f33;
+      --red:    #cf4538;
+      --purple: #ba8edb;
+      --ink:    #000000;
+      --white:  #ffffff;
+    }
+
+    html, body {
+      min-height: 100vh;
+      font-family: 'IBM Plex Mono', monospace;
+      background-color: var(--bg);
+      background-image: radial-gradient(circle, rgba(0,0,0,0.05) 1px, transparent 1px);
+      background-size: 20px 20px;
+      color: var(--ink);
+    }
+
+    /* ── SCREENS ── */
+    .screen { display: none; }
+    .screen.active { display: block; min-height: 100vh; }
+
+    /* 1280px fixed canvas — used by question screens only */
+    .sc {
+      position: relative;
+      width: 1280px;
+      height: 747px;
+      margin: 0 auto;
+    }
+
+    /* ══════════════════════════════════════
+       SCREEN 1 — LANDING
+    ══════════════════════════════════════ */
+
+    #screen-intro.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* White card: centered, content-fitted, 3px black border + shadow */
+    .lc-card {
+      width: 660px;
+      background: var(--white);
+      border: 3px solid var(--ink);
+      border-radius: 24px;
+      box-shadow: 6px 8px 0 rgba(0,0,0,0.18);
+      padding: 52px 72px 48px 72px;
+    }
+
+    .lc-line1 {
+      font-family: 'Nanum Pen Script', cursive;
+      font-size: 100px;
+      line-height: 0.95;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    .lc-line2 {
+      font-family: 'Nanum Pen Script', cursive;
+      font-size: 110px;
+      line-height: 1;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    /* Googly eyes inline with "twin" */
+    .lc-eyes {
+      display: inline-block;
+      transform: rotate(11.42deg);
+      flex-shrink: 0;
+    }
+
+    .lc-body {
+      margin-top: 40px;
+      font-size: 15px;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--ink);
+    }
+
+    .lc-btn-wrap {
+      margin-top: 44px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .lc-btn {
+      width: 218px;
+      height: 65px;
+      background: var(--orange);
+      border: none;
+      border-radius: 27px;
+      font-family: 'Nanum Pen Script', cursive;
+      font-size: 39px;
+      color: var(--white);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .lc-btn:hover { opacity: 0.9; }
+
+    @keyframes slideUp {
+      from { transform: translateY(0);       opacity: 1; }
+      to   { transform: translateY(-110vh);  opacity: 0; }
+    }
+    .lc-card.slide-up {
+      animation: slideUp 0.45s cubic-bezier(0.55, 0, 1, 0.8) forwards;
+      pointer-events: none;
+    }
+
+    /* ══════════════════════════════════════
+       SHARED QUESTION-SCREEN CHROME
+    ══════════════════════════════════════ */
+
+    /* Corner googly eyes — top-left */
+    .corner-eyes {
+      position: absolute;
+      left: 52px;
+      top: 24px;
+      width: 120px;
+      height: 85px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .corner-eyes img { transform: rotate(-11.93deg); }
+
+    /* Column labels — IBM Plex Mono SemiBold 20px, red */
+    /* Cards: 334+40+334=708px centered in 1280px → left offset=(1280-708)/2=286 */
+    .col-label {
+      position: absolute;
+      top: 66px;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--red);
+      white-space: nowrap;
+    }
+    .col-label-online  { left: 286px; }
+    .col-label-offline { left: 660px; }
+
+    /* Portrait cards — 334×334, 3px black border, 24px radius */
+    .q-card {
+      position: absolute;
+      top: 109px;
+      width: 334px;
+      height: 334px;
+      background: var(--white);
+      border-radius: 24px;
+      border: 3px solid var(--ink);
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .q-card-online  { left: 286px; }
+    .q-card-offline { left: 660px; }
+
+    /* Active card gets 5px purple border */
+    .q-card.is-active { border: 5px solid var(--purple); }
+
+    /* SVG canvas inside each card */
+    .card-canvas {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .card-canvas svg { width: 100%; height: 100%; display: block; }
+
+    /* Q-bar — width=708 matches cards+gap, same left offset */
+    .q-bar {
+      position: absolute;
+      left:   286px;
+      top:    478px;
+      width:  708px;
+      height: 269px;
+      background: var(--orange);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    /* Question text — IBM Plex Mono Medium 18px white */
+    .q-bar-text {
+      position: absolute;
+      left:  50px;
+      top:   16px;
+      right: 50px;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--white);
+      line-height: 1.3;
+    }
+
+    /* Shape option tiles — 4 tiles at 140px wide, 16px gaps, 50px left padding */
+    /* T1:50 T2:206 T3:362 T4:518 — right edge 658+50=708 ✓ */
+    .opt-tile {
+      position: absolute;
+      background: var(--bg);
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid transparent;
+    }
+    .opt-tile.selected { border: 3px solid var(--ink); }
+    .opt-tile:hover    { border: 2px solid var(--ink); }
+
+    /* Intro-2 bar body text */
+    .bar-intro-text {
+      position: absolute;
+      left:  131px;
+      top:   52px;
+      width: 469px;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--white);
+      line-height: 1.7;
+    }
+
+    /* "give it your colour :" label — 14px, left-aligned with tiles */
+    .colour-label {
+      position: absolute;
+      left: 50px;
+      top:  216px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--white);
+      white-space: nowrap;
+      line-height: 40px;
+    }
+
+    /* Colour circles — 40px diameter, 2px black border */
+    /* Start at left=50+176(label)+12(gap)=238, spaced 48px apart (40+8) */
+    .colour-circle {
+      position: absolute;
+      top:    212px;
+      width:  40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--ink);
+      cursor: pointer;
+      transition: transform 0.1s, border-width 0.1s;
+    }
+    .colour-circle.selected { border-width: 3px; transform: scale(1.15); }
+
+    /* Nav pills — aligned to base of orange bar (bar bottom = 478+269 = 747px) */
+    .nav-back {
+      position: absolute;
+      left:   1012px;
+      top:    691px;   /* 747 - 56 */
+      width:  56px;
+      height: 56px;
+      background: var(--white);
+      border: 2px solid var(--ink);
+      border-radius: 28px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 16px;
+      color: var(--ink);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-next {
+      position: absolute;
+      left:   1076px;  /* 1012 + 56 + 8px gap */
+      top:    691px;   /* 747 - 56 */
+      width:  150px;
+      height: 56px;
+      background: var(--orange);
+      border: none;
+      border-radius: 28px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 16px;
+      color: var(--white);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #btn-next:disabled { opacity: 0.4; cursor: not-allowed; }
+    .js-tab { display: none; }
+    #progress-current { display: none; }
+  </style>
 </head>
 <body>
 
-<!-- ══ INTRO ══ -->
-<div id="screen-intro" class="screen active">
-  <svg class="intro-eyeball" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="40" cy="40" rx="36" ry="36" fill="white" stroke="#1c1917" stroke-width="3"/>
-    <ellipse cx="40" cy="40" rx="16" ry="16" fill="#1c1917"/>
-    <ellipse cx="46" cy="34" rx="5" ry="5" fill="white"/>
-    <ellipse cx="34" cy="44" rx="2" ry="2" fill="white"/>
-  </svg>
-  <h1 class="intro-title">data portrait</h1>
-  <p class="intro-sub">
-    Answer 12 questions about who you are online and offline.<br>
-    Get two cards. No labels. No scores.<br>
-    Just you — rendered.
-  </p>
-  <button class="btn-primary" onclick="startQuiz()">begin →</button>
-  <p class="intro-meta">A project by Rimil &nbsp;·&nbsp; Ctrl Alt Reflect</p>
-</div>
+  <!-- ══════════════════════════════════════
+       SCREEN 1 — LANDING
+  ══════════════════════════════════════ -->
+  <div id="screen-intro" class="screen active">
 
-<!-- ══ QUESTION ══ -->
-<div id="screen-question" class="screen">
-  <div class="q-top-bar">
-    <span class="q-round-label" id="q-counter">1 / 11</span>
-    <div class="q-progress-track">
-      <div class="q-progress-fill" id="progress-fill" style="width:0%"></div>
+    <div class="lc-card">
+
+      <p class="lc-line1">my online</p>
+
+      <div class="lc-line2">
+        twin
+        <span class="lc-eyes">
+          <img src="googly-eyes.svg" width="110" alt="" aria-hidden="true">
+        </span>
+      </div>
+
+      <p class="lc-body">
+        You are not the same person online and offline. This is not an accusation. It's just true.<br><br>
+        My Online Twin renders both selves as a single visual object. Seven questions. Two cards. One of them gets the googly eyes.
+      </p>
+
+      <div class="lc-btn-wrap">
+        <button class="lc-btn" onclick="handleStart()">let's start</button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 2 — INTRO-2
+  ══════════════════════════════════════ -->
+  <div id="screen-intro-2" class="screen">
+    <div class="sc">
+
+      <div class="corner-eyes">
+        <img src="googly-eyes.svg" width="110" alt="" aria-hidden="true">
+      </div>
+
+      <p class="col-label col-label-online">Online</p>
+      <p class="col-label col-label-offline">Offline</p>
+
+      <div class="q-card q-card-online"></div>
+      <div class="q-card q-card-offline"></div>
+
+      <div class="q-bar">
+        <p class="bar-intro-text">
+          Each of you have two square templates one for each persona<br><br>
+          Going ahead choose the option that's the best fit for each version<br>
+          They can even be the same for both personas
+        </p>
+      </div>
+
+      <button class="nav-back" onclick="showScreen('screen-intro')">←</button>
+      <button class="nav-next" onclick="showScreen('screen-question')">→</button>
+
     </div>
   </div>
 
-  <!-- Hidden — read only by CSS :has() to place question in correct column -->
-  <div class="q-self-label" id="q-self-label"></div>
+  <!-- ══════════════════════════════════════
+       SCREEN 3 — QUESTION (Layer 1: Conversation Shape)
+  ══════════════════════════════════════ -->
+  <div id="screen-question" class="screen">
+    <div class="sc">
 
-  <div class="q-body">
-    <div class="q-col-header online">Online Self</div>
-    <div class="q-col-divider"></div>
-    <div class="q-col-header offline">Offline Self</div>
+      <div class="corner-eyes">
+        <img src="googly-eyes.svg" width="110" alt="" aria-hidden="true">
+      </div>
 
-    <div class="q-question-block">
-      <div class="q-constant-eyebrow">The Constant</div>
-      <div class="q-text" id="q-text"></div>
-      <div id="q-input-area"></div>
-    </div>
-  </div>
+      <p class="col-label col-label-online">Online</p>
+      <p class="col-label col-label-offline">Offline</p>
 
-  <div class="q-nav">
-    <button class="btn-ghost" id="btn-back" onclick="prevQuestion()" style="display:none">← back</button>
-    <button class="btn-primary" id="btn-next" onclick="nextQuestion()">next →</button>
-  </div>
-</div>
-
-<!-- ══ GENERATING ══ -->
-<div id="screen-generating" class="screen">
-  <p class="gen-text">rendering your portrait</p>
-  <div class="gen-dots">
-    <div class="gen-dot"></div>
-    <div class="gen-dot"></div>
-    <div class="gen-dot"></div>
-  </div>
-</div>
-
-<!-- ══ PORTRAIT ══ -->
-<div id="screen-portrait" class="screen">
-  <h2 class="portrait-title">your data portrait</h2>
-  <p class="portrait-subtitle">two selves · one person</p>
-
-  <div class="portrait-pair">
-    <div class="portrait-card-wrap" id="card-online-wrap" onclick="placeEyes('online')">
-      <div class="portrait-card-label online">online self</div>
-      <div class="portrait-svg-wrap" id="svg-online-wrap">
-        <svg id="svg-online" viewBox="0 0 280 280"></svg>
-        <div class="eyes-container" id="eyes-online">
-          <svg viewBox="0 0 280 280" style="position:absolute;top:0;left:0;width:100%;height:100%;"></svg>
+      <div class="q-card q-card-online is-active" id="card-online" onclick="document.getElementById('tab-online').click()">
+        <div class="card-canvas" id="canvas-online">
+          <svg id="svg-online" viewBox="0 0 334 334"></svg>
         </div>
       </div>
-    </div>
-
-    <div class="portrait-card-wrap" id="card-offline-wrap" onclick="placeEyes('offline')">
-      <div class="portrait-card-label offline">offline self</div>
-      <div class="portrait-svg-wrap" id="svg-offline-wrap">
-        <svg id="svg-offline" viewBox="0 0 280 280"></svg>
-        <div class="eyes-container" id="eyes-offline">
-          <svg viewBox="0 0 280 280" style="position:absolute;top:0;left:0;width:100%;height:100%;"></svg>
+      <div class="q-card q-card-offline" id="card-offline" onclick="document.getElementById('tab-offline').click()">
+        <div class="card-canvas" id="canvas-offline">
+          <svg id="svg-offline" viewBox="0 0 334 334"></svg>
         </div>
       </div>
+
+      <div class="q-bar">
+
+        <p class="q-bar-text" id="question-text">1. every conversation has a shape. which one is yours?</p>
+
+        <div id="options" style="display:none;" role="group" aria-label="Answer options"></div>
+
+        <!-- Shape tiles: 4 × 140px wide, 16px gaps, 50px left padding -->
+        <div class="opt-tile" style="left:50px;top:63px;width:140px;height:130px;"
+             onclick="document.querySelectorAll('.opt-tile').forEach(t=>t.classList.remove('selected'));this.classList.add('selected')">
+          <img src="assets/shape-blob.svg" style="height:105px;width:auto;" alt="blob shape">
+        </div>
+
+        <div class="opt-tile" style="left:206px;top:63px;width:140px;height:130px;"
+             onclick="document.querySelectorAll('.opt-tile').forEach(t=>t.classList.remove('selected'));this.classList.add('selected')">
+          <img src="assets/shape-cloud.svg" style="height:105px;width:auto;" alt="cloud shape">
+        </div>
+
+        <div class="opt-tile" style="left:362px;top:63px;width:140px;height:130px;"
+             onclick="document.querySelectorAll('.opt-tile').forEach(t=>t.classList.remove('selected'));this.classList.add('selected')">
+          <img src="assets/shape-spiky.svg" style="height:105px;width:auto;" alt="spiky shape">
+        </div>
+
+        <div class="opt-tile" style="left:518px;top:63px;width:140px;height:130px;"
+             onclick="document.querySelectorAll('.opt-tile').forEach(t=>t.classList.remove('selected'));this.classList.add('selected')">
+          <img src="assets/shape-square.svg" style="height:105px;width:auto;" alt="square shape">
+        </div>
+
+        <p class="colour-label">give it your colour :</p>
+
+        <!-- Circles start after label: 50 + ~176(text) + 12(gap) = 238, spaced 48px (40+8) -->
+        <div class="colour-circle" style="left:238px;background:#8bc34a;"
+             onclick="document.querySelectorAll('.colour-circle').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')"></div>
+        <div class="colour-circle" style="left:286px;background:#ff69b4;"
+             onclick="document.querySelectorAll('.colour-circle').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')"></div>
+        <div class="colour-circle" style="left:334px;background:#ffd700;"
+             onclick="document.querySelectorAll('.colour-circle').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')"></div>
+        <div class="colour-circle" style="left:382px;background:#87ceeb;"
+             onclick="document.querySelectorAll('.colour-circle').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')"></div>
+
+      </div><!-- /.q-bar -->
+
+      <span id="progress-current">1</span>
+      <button class="js-tab" id="tab-online"  type="button" data-self="online"  aria-selected="true"></button>
+      <button class="js-tab" id="tab-offline" type="button" data-self="offline" aria-selected="false"></button>
+
+      <button class="nav-back" id="btn-back" onclick="showScreen('screen-intro-2')">←</button>
+      <button class="nav-next" id="btn-next" disabled>→</button>
+
     </div>
   </div>
 
-  <p class="eyes-instruction" id="eyes-instruction">
-    tap the card that feels more like home
-  </p>
-
-  <p class="constant-mark-label" id="constant-label"></p>
-
-  <div class="portrait-actions" id="portrait-actions" style="display:none">
-    <button class="btn-ghost" onclick="restartQuiz()">start over</button>
-    <button class="btn-primary" onclick="downloadPortrait()">save portrait</button>
-  </div>
-</div>
-
-<script>
-// ══════════════════════════════════════════════
-// DATA
-// ══════════════════════════════════════════════
-
-const QUESTIONS = [
-  // Online Self
-  {
-    id: 'o_energy', self: 'online', type: 'options',
-    text: 'Pick a word that describes your energy when you\'re online.',
-    options: ['wired', 'performing', 'lurking', 'curating', 'restless']
-  },
-  {
-    id: 'o_polish', self: 'online', type: 'scale',
-    text: 'When you post something, how finished does it have to feel?',
-    labels: ['rough & raw', 'polished for weeks']
-  },
-  {
-    id: 'o_conflict', self: 'online', type: 'options',
-    text: 'When a conversation gets difficult online, you —',
-    options: ['go quiet', 'over-explain', 'react fast', 'step away', 'deflect with humour']
-  },
-  {
-    id: 'o_audience', self: 'online', type: 'options',
-    text: 'Who are you most aware of when you\'re online?',
-    options: ['no one really', 'people i know IRL', 'strangers', 'future versions of people who might find me']
-  },
-  {
-    id: 'o_feels', self: 'online', type: 'options',
-    text: 'Does your online self feel like you?',
-    options: ['completely', 'mostly', 'somewhat', 'not really']
-  },
-  // Offline Self
-  {
-    id: 'f_energy', self: 'offline', type: 'options',
-    text: 'Pick a word that describes your energy when you\'re alone.',
-    options: ['still', 'restless', 'foggy', 'warm', 'scattered']
-  },
-  {
-    id: 'f_express', self: 'offline', type: 'options',
-    text: 'When it comes to expressing yourself in person, you are —',
-    options: ['guarded', 'share what feels relevant', 'balanced, i take time', 'an open book']
-  },
-  {
-    id: 'f_conflict', self: 'offline', type: 'options',
-    text: 'When a conflict happens in real life, you —',
-    options: ['internalize it', 'talk it out', 'need time alone first', 'smooth it over', 'get loud about it']
-  },
-  {
-    id: 'f_described', self: 'offline', type: 'options',
-    text: 'How do people close to you usually describe you?',
-    options: ['calm', 'intense', 'funny', 'hard to read', 'magnetic', 'soft']
-  },
-  {
-    id: 'f_feels', self: 'offline', type: 'options',
-    text: 'Does your offline self feel like you?',
-    options: ['completely', 'mostly', 'somewhat', 'not really']
-  },
-  // Cross-card
-  {
-    id: 'constant', self: 'constant', type: 'text',
-    text: 'What is one thing that stays the same — in both versions of you?',
-    placeholder: 'my 3am brain, the way i laugh too loud…'
-  },
-  // Eyes
-  {
-    id: 'eyes', self: 'eyes', type: 'eyes',
-    text: 'Now tap the card that feels more like home.',
-  }
-];
-
-// ══════════════════════════════════════════════
-// COLOR MAPS
-// ══════════════════════════════════════════════
-
-const ONLINE_COLORS = {
-  'wired':      { bg: '#FFE566', accent: '#FF6B35' },
-  'performing': { bg: '#FFB3C6', accent: '#C9184A' },
-  'lurking':    { bg: '#C8E6FF', accent: '#1565C0' },
-  'curating':   { bg: '#D8F3DC', accent: '#2D6A4F' },
-  'restless':   { bg: '#FFD6A5', accent: '#E07000' },
-};
-
-const OFFLINE_COLORS = {
-  'still':     { bg: '#E8E0F0', accent: '#6A4C93' },
-  'restless':  { bg: '#FFE5D9', accent: '#C1440E' },
-  'foggy':     { bg: '#DFE7F5', accent: '#3A5A8C' },
-  'warm':      { bg: '#FFF0D4', accent: '#C06000' },
-  'scattered': { bg: '#F0EAD6', accent: '#7A6040' },
-};
-
-// Shapes: 0=square 1=rounded 2=blob 3=speech 4=cloud 5=jagged
-const SHAPE_PATHS = {
-  0: (cx,cy,r) => `M${cx-r},${cy-r} L${cx+r},${cy-r} L${cx+r},${cy+r} L${cx-r},${cy+r} Z`,
-  1: (cx,cy,r) => `M${cx-r+r*0.3},${cy-r} Q${cx+r},${cy-r} ${cx+r},${cy-r+r*0.3} L${cx+r},${cy+r-r*0.3} Q${cx+r},${cy+r} ${cx+r-r*0.3},${cy+r} L${cx-r+r*0.3},${cy+r} Q${cx-r},${cy+r} ${cx-r},${cy+r-r*0.3} L${cx-r},${cy-r+r*0.3} Q${cx-r},${cy-r} ${cx-r+r*0.3},${cy-r} Z`,
-  2: (cx,cy,r) => {
-    const pts = [];
-    for(let i=0;i<8;i++){
-      const a = (i/8)*Math.PI*2;
-      const rr = r * (0.85 + 0.15 * Math.sin(i*2.3+1));
-      pts.push([cx+Math.cos(a)*rr, cy+Math.sin(a)*rr]);
+  <script>
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
     }
-    return `M${pts[0][0]},${pts[0][1]} ` + pts.slice(1).map(p=>`L${p[0]},${p[1]}`).join(' ') + ' Z';
-  },
-  3: (cx,cy,r) => `M${cx-r},${cy-r*0.6} Q${cx-r},${cy-r} ${cx-r+r*0.3},${cy-r} L${cx+r-r*0.3},${cy-r} Q${cx+r},${cy-r} ${cx+r},${cy-r*0.6} L${cx+r},${cy+r*0.4} Q${cx+r},${cy+r*0.7} ${cx+r-r*0.3},${cy+r*0.7} L${cx+r*0.2},${cy+r*0.7} L${cx-r*0.2},${cy+r} L${cx-r*0.4},${cy+r*0.7} L${cx-r+r*0.3},${cy+r*0.7} Q${cx-r},${cy+r*0.7} ${cx-r},${cy+r*0.4} Z`,
-  4: (cx,cy,r) => {
-    const bumps = 6, pts=[];
-    for(let i=0;i<bumps*2;i++){
-      const a=(i/bumps/2)*Math.PI*2;
-      const rr = i%2===0 ? r : r*0.78;
-      pts.push([cx+Math.cos(a)*rr,cy+Math.sin(a)*rr]);
+
+    function playButtonSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(680, ctx.currentTime + 0.09);
+        osc.frequency.exponentialRampToValueAtTime(520, ctx.currentTime + 0.18);
+        gain.gain.setValueAtTime(0.28, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.25);
+      } catch(e) {}
     }
-    return `M${pts[0][0]},${pts[0][1]} ` + pts.slice(1).map(p=>`L${p[0]},${p[1]}`).join(' ')+' Z';
-  },
-  5: (cx,cy,r) => {
-    const pts=[]; const n=16;
-    for(let i=0;i<n;i++){
-      const a=(i/n)*Math.PI*2;
-      const rr = r*(0.7+0.3*(i%2));
-      pts.push([cx+Math.cos(a)*rr,cy+Math.sin(a)*rr]);
+
+    function handleStart() {
+      playButtonSound();
+      const card = document.querySelector('.lc-card');
+      card.classList.add('slide-up');
+      card.addEventListener('animationend', () => showScreen('screen-intro-2'), { once: true });
     }
-    return `M${pts[0][0]},${pts[0][1]} `+pts.slice(1).map(p=>`L${p[0]},${p[1]}`).join(' ')+' Z';
-  }
-};
 
-// Maps answers to shape index
-function getShape(express_or_polish) {
-  if(typeof express_or_polish === 'number') {
-    // scale 1-5
-    const v = express_or_polish;
-    if(v<=1) return 5; // jagged
-    if(v<=2) return 0; // square
-    if(v<=3) return 1; // rounded
-    if(v<=4) return 2; // blob
-    return 1; // smooth
-  }
-  const map = {
-    'guarded': 0,
-    'share what feels relevant': 1,
-    'balanced, i take time': 2,
-    'an open book': 4,
-  };
-  return map[express_or_polish] ?? 1;
-}
+    // Short pop for every interactive click (tiles, circles, nav arrows)
+    function playClickSound() {
+      try {
+        const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.18, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.1);
+      } catch(e) {}
+    }
 
-// Inner symbols as SVG paths
-const SYMBOLS = {
-  'go quiet':       (cx,cy) => `<circle cx="${cx-12}" cy="${cy}" r="4" fill="currentColor"/><circle cx="${cx}" cy="${cy}" r="4" fill="currentColor"/><circle cx="${cx+12}" cy="${cy}" r="4" fill="currentColor"/>`,
-  'over-explain':   (cx,cy) => `<line x1="${cx-16}" y1="${cy-8}" x2="${cx+16}" y2="${cy-8}" stroke="currentColor" stroke-width="3"/><line x1="${cx-16}" y1="${cy}" x2="${cx+16}" y2="${cy}" stroke="currentColor" stroke-width="3"/><line x1="${cx-16}" y1="${cy+8}" x2="${cx+16}" y2="${cy+8}" stroke="currentColor" stroke-width="3"/>`,
-  'react fast':     (cx,cy) => `<polygon points="${cx},${cy-18} ${cx+4},${cy-4} ${cx+18},${cy} ${cx+4},${cy+4} ${cx},${cy+18} ${cx-4},${cy+4} ${cx-18},${cy} ${cx-4},${cy-4}" fill="currentColor"/>`,
-  'step away':      (cx,cy) => `<path d="M${cx-10},${cy} Q${cx},${cy-16} ${cx+10},${cy}" stroke="currentColor" stroke-width="2.5" fill="none"/><path d="M${cx-10},${cy+6} Q${cx},${cy-10} ${cx+10},${cy+6}" stroke="currentColor" stroke-width="2.5" fill="none"/>`,
-  'deflect with humour': (cx,cy) => `<path d="M${cx-14},${cy-4} Q${cx},${cy+12} ${cx+14},${cy-4}" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/>`,
-  'internalize it': (cx,cy) => `<circle cx="${cx}" cy="${cy}" r="14" stroke="currentColor" stroke-width="2.5" fill="none"/><circle cx="${cx}" cy="${cy}" r="7" fill="currentColor"/>`,
-  'talk it out':    (cx,cy) => `<line x1="${cx-16}" y1="${cy-8}" x2="${cx+16}" y2="${cy-8}" stroke="currentColor" stroke-width="3"/><line x1="${cx-16}" y1="${cy}" x2="${cx+16}" y2="${cy}" stroke="currentColor" stroke-width="3"/><line x1="${cx-16}" y1="${cy+8}" x2="${cx+16}" y2="${cy+8}" stroke="currentColor" stroke-width="3"/>`,
-  'need time alone first': (cx,cy) => `<circle cx="${cx}" cy="${cy}" r="14" stroke="currentColor" stroke-width="2.5" fill="none"/><circle cx="${cx}" cy="${cy}" r="7" stroke="currentColor" stroke-width="2" fill="none"/>`,
-  'smooth it over': (cx,cy) => `<path d="M${cx-14},${cy-4} Q${cx},${cy+12} ${cx+14},${cy-4}" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/>`,
-  'get loud about it': (cx,cy) => `<polygon points="${cx},${cy-18} ${cx+4},${cy-4} ${cx+18},${cy} ${cx+4},${cy+4} ${cx},${cy+18} ${cx-4},${cy+4} ${cx-18},${cy} ${cx-4},${cy-4}" fill="currentColor"/>`,
-};
-
-// Aura mark styles: density + type
-const AURA_STYLES = {
-  // online audience
-  'no one really':             { density: 1, type: 'dots' },
-  'people i know IRL':         { density: 2, type: 'lines' },
-  'strangers':                 { density: 3, type: 'sparks' },
-  'future versions of people who might find me': { density: 4, type: 'rings' },
-  // offline described
-  'calm':       { density: 1, type: 'rings' },
-  'intense':    { density: 4, type: 'sparks' },
-  'funny':      { density: 3, type: 'dots' },
-  'hard to read': { density: 2, type: 'lines' },
-  'magnetic':   { density: 4, type: 'rings' },
-  'soft':       { density: 2, type: 'dots' },
-};
-
-// Constant mark types (assigned by AI, or fallback)
-const CONSTANT_MARKS = {
-  humour:    { svg: (x,y) => `<text x="${x}" y="${y}" font-size="14" fill="currentColor" text-anchor="middle" font-family="Space Mono">*</text>` },
-  anxiety:   { svg: (x,y) => `<line x1="${x-8}" y1="${y}" x2="${x+8}" y2="${y}" stroke="currentColor" stroke-width="2" stroke-dasharray="2,2"/>` },
-  care:      { svg: (x,y) => `<circle cx="${x-5}" cy="${y}" r="3" fill="currentColor"/><circle cx="${x+5}" cy="${y}" r="3" fill="currentColor"/><circle cx="${x}" cy="${y-3}" r="3" fill="currentColor"/>` },
-  control:   { svg: (x,y) => `<line x1="${x}" y1="${y-8}" x2="${x}" y2="${y+8}" stroke="currentColor" stroke-width="2"/><line x1="${x-8}" y1="${y}" x2="${x+8}" y2="${y}" stroke="currentColor" stroke-width="2"/>` },
-  curiosity: { svg: (x,y) => `<path d="M${x+8},${y} a8,8 0 1,1-16,0 a8,8 0 0,1 8-8 M${x},${y+4} l0,4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>` },
-  restlessness: { svg: (x,y) => `<path d="M${x-10},${y+4} L${x-4},${y-4} L${x+4},${y+4} L${x+10},${y-4}" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>` },
-};
-
-// ══════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════
-
-let currentQ = 0;
-let answers = {};
-let constantMarkType = 'curiosity';
-let eyesPlaced = false;
-
-// ══════════════════════════════════════════════
-// QUIZ FLOW
-// ══════════════════════════════════════════════
-
-function startQuiz() {
-  showScreen('screen-question');
-  renderQuestion();
-}
-
-function renderQuestion() {
-  const q = QUESTIONS[currentQ];
-  if (q.type === 'eyes') {
-    generatePortraits();
-    return;
-  }
-
-  const total = QUESTIONS.length - 1; // exclude eyes q from count
-  const pct = (currentQ / total) * 100;
-
-  document.getElementById('progress-fill').style.width = pct + '%';
-  document.getElementById('q-counter').textContent = `${currentQ + 1} / ${total}`;
-
-  const labelEl = document.getElementById('q-self-label');
-  labelEl.textContent = q.self === 'constant' ? 'the constant' :
-                        q.self === 'online' ? 'online self' : 'offline self';
-  labelEl.className = 'q-self-label ' + q.self;
-
-  document.getElementById('q-text').textContent = q.text;
-  document.getElementById('btn-back').style.display = currentQ > 0 ? 'block' : 'none';
-
-  const area = document.getElementById('q-input-area');
-  area.innerHTML = '';
-
-  if (q.type === 'options') {
-    const wrap = document.createElement('div');
-    wrap.className = 'q-options';
-    q.options.forEach(opt => {
-      const btn = document.createElement('button');
-      btn.className = 'q-option';
-      btn.textContent = opt;
-      if (answers[q.id] === opt) btn.classList.add('selected');
-      btn.onclick = () => {
-        wrap.querySelectorAll('.q-option').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        answers[q.id] = opt;
-      };
-      wrap.appendChild(btn);
+    // Fire playClickSound on every interactive click except the landing button
+    // (landing button already uses playButtonSound via handleStart)
+    document.addEventListener('click', function(e) {
+      if (e.target.closest('.opt-tile, .colour-circle, .nav-back, .nav-next, #btn-next, #btn-back')) {
+        playClickSound();
+      }
     });
-    area.appendChild(wrap);
+  </script>
 
-  } else if (q.type === 'scale') {
-    const wrap = document.createElement('div');
-    wrap.className = 'q-scale';
-    const val = answers[q.id] ?? 3;
-    wrap.innerHTML = `
-      <input type="range" min="1" max="5" step="1" value="${val}" id="scale-input">
-      <div class="q-scale-labels"><span>${q.labels[0]}</span><span>${q.labels[1]}</span></div>
-    `;
-    wrap.querySelector('#scale-input').oninput = (e) => {
-      answers[q.id] = parseInt(e.target.value);
+  <script>
+    /**
+     * Shell state only — wiring for tabs + NEXT gate.
+     * Asset roots (for later):
+     *   data portrait/shapes/
+     *   data portrait/textures/
+     *   data portrait/vibes/
+     *   data portrait/connectors/
+     */
+    const TOTAL_QUESTIONS = 7;
+
+    let currentQuestion = 0;
+    let activeSelf = 'online';
+    const answers = {
+      online: Array(TOTAL_QUESTIONS).fill(null),
+      offline: Array(TOTAL_QUESTIONS).fill(null),
     };
-    answers[q.id] = answers[q.id] ?? val;
-    area.appendChild(wrap);
 
-  } else if (q.type === 'text') {
-    const inp = document.createElement('input');
-    inp.type = 'text';
-    inp.className = 'q-text-input';
-    inp.placeholder = q.placeholder;
-    inp.value = answers[q.id] ?? '';
-    inp.oninput = (e) => { answers[q.id] = e.target.value; };
-    area.appendChild(inp);
-  }
-}
+    const els = {
+      progressCurrent: document.getElementById('progress-current'),
+      questionText: document.getElementById('question-text'),
+      options: document.getElementById('options'),
+      btnNext: document.getElementById('btn-next'),
+      tabOnline: document.getElementById('tab-online'),
+      tabOffline: document.getElementById('tab-offline'),
+      cardOnline: document.getElementById('card-online'),
+      cardOffline: document.getElementById('card-offline'),
+      canvasOnline: document.getElementById('canvas-online'),
+      canvasOffline: document.getElementById('canvas-offline'),
+    };
 
-function nextQuestion() {
-  const q = QUESTIONS[currentQ];
-  // Validate
-  if (q.type === 'options' && !answers[q.id]) {
-    // gentle shake
-    const area = document.getElementById('q-input-area');
-    area.style.transform = 'translateX(6px)';
-    setTimeout(() => area.style.transform = 'translateX(-6px)', 80);
-    setTimeout(() => area.style.transform = 'translateX(0)', 160);
-    return;
-  }
-  if (q.type === 'scale') answers[q.id] = answers[q.id] ?? 3;
+    function setActiveTab(self) {
+      activeSelf = self;
+      const isOnline = self === 'online';
 
-  currentQ++;
-  if (currentQ >= QUESTIONS.length) {
-    generatePortraits();
-  } else {
-    renderQuestion();
-  }
-}
+      els.tabOnline.classList.toggle('active', isOnline);
+      els.tabOffline.classList.toggle('active', !isOnline);
+      els.tabOnline.setAttribute('aria-selected', String(isOnline));
+      els.tabOffline.setAttribute('aria-selected', String(!isOnline));
 
-function prevQuestion() {
-  if (currentQ > 0) { currentQ--; renderQuestion(); }
-}
-
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-// ══════════════════════════════════════════════
-// PORTRAIT GENERATION
-// ══════════════════════════════════════════════
-
-async function generatePortraits() {
-  showScreen('screen-generating');
-
-  // Interpret constant via Claude API
-  const constantText = answers['constant'] || 'my curiosity';
-  try {
-    constantMarkType = await interpretConstant(constantText);
-  } catch(e) {
-    constantMarkType = guessMarkType(constantText);
-  }
-
-  // Small delay for effect
-  await new Promise(r => setTimeout(r, 1200));
-
-  renderCard('online');
-  renderCard('offline');
-  renderConstantMark();
-
-  showScreen('screen-portrait');
-}
-
-async function interpretConstant(text) {
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 60,
-      messages: [{
-        role: 'user',
-        content: `You are mapping a person's self-described constant trait to one of these visual mark types: humour, anxiety, care, control, curiosity, restlessness.
-
-The person wrote: "${text}"
-
-Reply with ONLY one word from that list — the best match. No explanation.`
-      }]
-    })
-  });
-  const data = await resp.json();
-  const raw = data.content[0].text.trim().toLowerCase();
-  const valid = ['humour','anxiety','care','control','curiosity','restlessness'];
-  return valid.find(v => raw.includes(v)) || 'curiosity';
-}
-
-function guessMarkType(text) {
-  const t = text.toLowerCase();
-  if(/laugh|joke|funny|humour|humor/.test(t)) return 'humour';
-  if(/anxious|anxiety|worry|overthink|stress/.test(t)) return 'anxiety';
-  if(/care|love|people|heart|kind/.test(t)) return 'care';
-  if(/control|order|neat|plan|structure/.test(t)) return 'control';
-  if(/curious|question|wonder|learn|explore/.test(t)) return 'curiosity';
-  return 'restlessness';
-}
-
-// ── RENDER ONE CARD ──
-function renderCard(self) {
-  const svgEl = document.getElementById(`svg-${self}`);
-  const W = 280, H = 280, cx = 140, cy = 140;
-
-  // Get answers
-  const energyKey = self === 'online' ? 'o_energy' : 'f_energy';
-  const shapeKey  = self === 'online' ? 'o_polish' : 'f_express';
-  const symbolKey = self === 'online' ? 'o_conflict' : 'f_conflict';
-  const auraKey   = self === 'online' ? 'o_audience' : 'f_described';
-
-  const energy  = answers[energyKey] || (self==='online' ? 'wired' : 'still');
-  const shapeAns = answers[shapeKey] || (self==='online' ? 3 : 'balanced, i take time');
-  const symbolAns = answers[symbolKey] || 'go quiet';
-  const auraAns   = answers[auraKey] || 'no one really';
-
-  const colors = self === 'online'
-    ? (ONLINE_COLORS[energy] || ONLINE_COLORS['wired'])
-    : (OFFLINE_COLORS[energy] || OFFLINE_COLORS['still']);
-
-  const shapeIdx = getShape(shapeAns);
-  const shapeFn  = SHAPE_PATHS[shapeIdx];
-  const shapeR   = 80;
-  const shapePath = shapeFn(cx, cy, shapeR);
-
-  // Aura
-  const auraStyle = AURA_STYLES[auraAns] || { density: 2, type: 'dots' };
-
-  // Inner rings (concentrically nested color layers like zine)
-  const ringCount = 3;
-  const ringColors = generateRingColors(colors.bg, colors.accent, ringCount);
-
-  let svgContent = ``;
-
-  // Background
-  svgContent += `<rect width="${W}" height="${H}" fill="${colors.bg}"/>`;
-
-  // Aura layer (behind shape)
-  svgContent += generateAura(cx, cy, shapeR + 20, auraStyle, colors.accent);
-
-  // Nested shape rings
-  for(let i = ringCount; i >= 0; i--) {
-    const rr = shapeR - i * 14;
-    if(rr <= 0) continue;
-    const p = SHAPE_PATHS[shapeIdx](cx, cy, rr);
-    const fill = i === 0 ? colors.accent + '22' : ringColors[ringCount - i] || colors.bg;
-    const stroke = i === ringCount ? colors.accent : 'none';
-    svgContent += `<path d="${p}" fill="${fill}" stroke="${stroke}" stroke-width="2.5"/>`;
-  }
-
-  // Inner symbol
-  const symbolFn = SYMBOLS[symbolAns];
-  if(symbolFn) {
-    svgContent += `<g color="${colors.accent}" fill="${colors.accent}" stroke="${colors.accent}">${symbolFn(cx, cy)}</g>`;
-  }
-
-  svgEl.innerHTML = svgContent;
-}
-
-function generateRingColors(bg, accent, count) {
-  // Blend from bg toward accent
-  const colors = [];
-  for(let i = 0; i < count; i++) {
-    const t = (i / count) * 0.7 + 0.15;
-    colors.push(blendHex(bg, accent, t));
-  }
-  return colors;
-}
-
-function blendHex(hex1, hex2, t) {
-  const r1=parseInt(hex1.slice(1,3),16), g1=parseInt(hex1.slice(3,5),16), b1=parseInt(hex1.slice(5,7),16);
-  const r2=parseInt(hex2.slice(1,3),16), g2=parseInt(hex2.slice(3,5),16), b2=parseInt(hex2.slice(5,7),16);
-  const r=Math.round(r1+(r2-r1)*t), g=Math.round(g1+(g2-g1)*t), b=Math.round(b1+(b2-b1)*t);
-  return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
-}
-
-function generateAura(cx, cy, r, style, color) {
-  let marks = '';
-  const { density, type } = style;
-  const count = density * 4;
-  const seed = cx + cy; // deterministic
-
-  for(let i = 0; i < count; i++) {
-    const angle = (i / count) * Math.PI * 2 + (i * 0.3);
-    const dist = r + 12 + ((i * 7 + seed) % 20);
-    const x = cx + Math.cos(angle) * dist;
-    const y = cy + Math.sin(angle) * dist;
-
-    if(type === 'dots') {
-      marks += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${1.5 + (i%3)}" fill="${color}" opacity="0.6"/>`;
-    } else if(type === 'lines') {
-      const x2 = cx + Math.cos(angle) * (dist + 8);
-      const y2 = cy + Math.sin(angle) * (dist + 8);
-      marks += `<line x1="${x.toFixed(1)}" y1="${y.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${color}" stroke-width="1.5" opacity="0.5"/>`;
-    } else if(type === 'sparks') {
-      const len = 6 + (i % 4) * 2;
-      marks += `<line x1="${x.toFixed(1)}" y1="${y.toFixed(1)}" x2="${(x+Math.cos(angle)*len).toFixed(1)}" y2="${(y+Math.sin(angle)*len).toFixed(1)}" stroke="${color}" stroke-width="2" opacity="0.7" stroke-linecap="round"/>`;
-    } else if(type === 'rings') {
-      marks += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${3+(i%3)}" fill="none" stroke="${color}" stroke-width="1.2" opacity="0.5"/>`;
+      els.cardOnline.classList.toggle('is-active', isOnline);
+      els.cardOffline.classList.toggle('is-active', !isOnline);
     }
-  }
-  return marks;
-}
 
-function renderConstantMark() {
-  const text = answers['constant'] || '';
-  const mark = CONSTANT_MARKS[constantMarkType];
-  const color = '#1a1a1a';
+    function bothAnswered() {
+      return answers.online[currentQuestion] != null && answers.offline[currentQuestion] != null;
+    }
 
-  // Place same mark on bottom-right of both cards
-  const positions = [
-    { svgId: 'svg-online',  x: 248, y: 248 },
-    { svgId: 'svg-offline', x: 248, y: 248 },
-  ];
+    function updateNextButton() {
+      els.btnNext.disabled = !bothAnswered();
+    }
 
-  positions.forEach(({svgId, x, y}) => {
-    const svgEl = document.getElementById(svgId);
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    g.setAttribute('color', color);
-    g.setAttribute('stroke', color);
-    g.setAttribute('fill', color);
-    g.innerHTML = mark.svg(x, y);
-    svgEl.appendChild(g);
-  });
+    function updateProgress() {
+      els.progressCurrent.textContent = String(currentQuestion + 1);
+    }
 
-  document.getElementById('constant-label').innerHTML =
-    `The mark in the corner of both cards — <strong>${constantMarkType}</strong> — is what you share with yourself.`;
-}
+    els.tabOnline.addEventListener('click', () => setActiveTab('online'));
+    els.tabOffline.addEventListener('click', () => setActiveTab('offline'));
 
-// ══════════════════════════════════════════════
-// GOOGLY EYES
-// ══════════════════════════════════════════════
+    els.btnNext.addEventListener('click', () => {
+      if (!bothAnswered()) return;
+      if (currentQuestion < TOTAL_QUESTIONS - 1) {
+        currentQuestion += 1;
+        updateProgress();
+        updateNextButton();
+        setActiveTab('online');
+      }
+    });
 
-function placeEyes(self) {
-  if(eyesPlaced) return;
-  eyesPlaced = true;
+    updateProgress();
+    updateNextButton();
+  </script>
 
-  answers['eyes'] = self;
+  <!-- ═══════════════════════════════════════════════════
+       LAYER 1 — Conversation Shape Interaction
+  ═══════════════════════════════════════════════════ -->
+  <script>
+    // ── Fix 1: actual SVG files via fetch ──────────────
+    const SHAPE_FILES = {
+      'blob':   'shape-blob.svg',
+      'cloud':  'shape-cloud.svg',
+      'spiky':  'shape-spiky.svg',
+      'square': 'shape-square.svg',
+    };
 
-  const eyesSvg = document.querySelector(`#eyes-${self} svg`);
-  eyesSvg.innerHTML = buildEyesSVG(140, 140);
-  document.getElementById(`eyes-${self}`).classList.add('visible');
+    // ── Fix 3: colour map ──────────────────────────────
+    const COLOUR_MAP = {
+      'green':  '#8bc34a',
+      'pink':   '#ff69b4',
+      'yellow': '#ffd700',
+      'blue':   '#87ceeb',
+    };
 
-  document.getElementById('eyes-instruction').style.opacity = '0';
-  document.getElementById('eyes-instruction').style.transition = 'opacity 0.4s';
+    // ── Fix 1: fetch-based render ──────────────────────
+    async function renderShapeInCard(cardId, svgFile, colour) {
+      const card = document.getElementById(cardId);
+      try {
+        const response = await fetch('assets/' + svgFile);
+        const svgText  = await response.text();
+        const parser   = new DOMParser();
+        const doc      = parser.parseFromString(svgText, 'image/svg+xml');
+        const svg      = doc.querySelector('svg');
+        svg.style.cssText = 'width:100%; height:100%;';
+        svg.querySelectorAll('path, circle, rect, ellipse').forEach(el => {
+          if (el.getAttribute('fill') !== 'none' && el.getAttribute('fill') !== null) {
+            el.setAttribute('fill', colour);
+          }
+          el.setAttribute('stroke', '#000000');
+          el.setAttribute('stroke-width', '3');
+        });
+        card.innerHTML = '';
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'width:100%; height:100%; padding:20px; box-sizing:border-box; display:flex; align-items:center; justify-content:center;';
+        wrapper.appendChild(svg);
+        card.appendChild(wrapper);
+      } catch(e) {
+        console.error('Could not load SVG:', svgFile, e);
+      }
+    }
 
-  setTimeout(() => {
-    document.getElementById('portrait-actions').style.display = 'flex';
-  }, 600);
-}
+    // ── Fix 2: flow state ──────────────────────────────
+    let selectedShape  = null;
+    let selectedColour = null;
+    let activeCard     = 'online'; // 'online' | 'offline' | 'done'
 
-function buildEyesSVG(cx, cy) {
-  const offsets = [{x:-22,y:-18},{x:18,y:-14}];
-  return offsets.map(({x,y}) => {
-    const ex = cx + x, ey = cy + y;
-    return `
-      <circle cx="${ex}" cy="${ey}" r="13" fill="white" stroke="#1a1a1a" stroke-width="2"/>
-      <circle cx="${ex+3}" cy="${ey+2}" r="6" fill="#1a1a1a"/>
-      <circle cx="${ex+5}" cy="${ey}" r="2.5" fill="white"/>
-    `;
-  }).join('');
-}
+    // Label refs — HTML has no IDs, use class selectors
+    const labelOnline  = document.querySelector('#screen-question .col-label-online');
+    const labelOffline = document.querySelector('#screen-question .col-label-offline');
 
-// ══════════════════════════════════════════════
-// UTILS
-// ══════════════════════════════════════════════
+    // Next only visible after BOTH cards are filled (activeCard === 'done')
+    function updateNextButton() {
+      const btn = document.getElementById('btn-next');
+      if (activeCard === 'done') {
+        btn.style.opacity       = '1';
+        btn.style.pointerEvents = 'auto';
+      } else {
+        btn.style.opacity       = '0.4';
+        btn.style.pointerEvents = 'none';
+      }
+    }
 
-function restartQuiz() {
-  currentQ = 0;
-  answers = {};
-  eyesPlaced = false;
-  document.getElementById('eyes-online').classList.remove('visible');
-  document.getElementById('eyes-offline').classList.remove('visible');
-  document.getElementById('portrait-actions').style.display = 'none';
-  document.getElementById('eyes-instruction').style.opacity = '1';
-  showScreen('screen-intro');
-}
+    // ── clearSelections — uses actual HTML class .opt-tile ─
+    function clearSelections() {
+      document.querySelectorAll('#screen-question .opt-tile').forEach(t => {
+        t.style.border     = '2px solid transparent';
+        t.style.background = '#f8f0dd';
+      });
+      document.querySelectorAll('#screen-question .colour-circle').forEach(c => {
+        c.style.outline   = 'none';
+        c.style.transform = 'scale(1)';
+      });
+    }
 
-function downloadPortrait() {
-  // Combine both SVGs into a single downloadable SVG
-  const onlineSVG = document.getElementById('svg-online').innerHTML;
-  const offlineSVG = document.getElementById('svg-offline').innerHTML;
-  const onlineEyes = document.querySelector('#eyes-online svg').innerHTML;
-  const offlineEyes = document.querySelector('#eyes-offline svg').innerHTML;
-  const chosenSelf = answers['eyes'];
+    // Next button only advances to Layer 2 — cards are already filled by auto-advance
+    async function handleNext() {
+      if (activeCard !== 'done') return;
+      console.log('Layer 1 complete — advancing to Layer 2');
+      // TODO: showScreen('screen-layer2');
+    }
 
-  const fullSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 320" width="1280" height="640">
-    <rect width="640" height="320" fill="#f5f0e8"/>
-    <text x="320" y="24" text-anchor="middle" font-family="serif" font-size="14" fill="#8a8070" letter-spacing="3">DATA PORTRAIT</text>
-    <text x="100" y="48" text-anchor="middle" font-family="monospace" font-size="9" fill="#ff6b35" letter-spacing="2">ONLINE SELF</text>
-    <text x="540" y="48" text-anchor="middle" font-family="monospace" font-size="9" fill="#4a90d9" letter-spacing="2">OFFLINE SELF</text>
-    <g transform="translate(20,56) scale(${260/280})">${onlineSVG}${chosenSelf==='online'?onlineEyes:''}</g>
-    <g transform="translate(360,56) scale(${260/280})">${offlineSVG}${chosenSelf==='offline'?offlineEyes:''}</g>
-  </svg>`;
+    // ── handleSelection: preview + auto-advance ────────
+    // Debounce timer so rapid re-selections don't double-fire
+    let autoAdvanceTimer = null;
 
-  const blob = new Blob([fullSVG], {type:'image/svg+xml'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'data-portrait.svg';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-</script>
+    async function handleSelection() {
+      // Change 1: always preview shape immediately (transparent if no colour yet)
+      if (selectedShape) {
+        const cardId     = activeCard === 'online' ? 'card-online' : 'card-offline';
+        const fillColour = selectedColour ? COLOUR_MAP[selectedColour] : 'transparent';
+        await renderShapeInCard(cardId, SHAPE_FILES[selectedShape], fillColour);
+      }
+
+      // Change 2: auto-advance 400ms after BOTH are selected
+      clearTimeout(autoAdvanceTimer);
+      if (selectedShape && selectedColour) {
+        autoAdvanceTimer = setTimeout(() => {
+          if (activeCard === 'online') {
+            activeCard = 'offline';
+            document.getElementById('card-online').style.border  = '3px solid #000';
+            document.getElementById('card-offline').style.border = '5px solid #ba8edb';
+            labelOnline.style.color  = '#cf4538';
+            labelOffline.style.color = '#ba8edb';
+            selectedShape  = null;
+            selectedColour = null;
+            clearSelections();
+            updateNextButton();
+          } else if (activeCard === 'offline') {
+            activeCard = 'done';
+            document.getElementById('card-offline').style.border = '3px solid #000';
+            labelOffline.style.color = '#cf4538';
+            selectedShape  = null;
+            selectedColour = null;
+            clearSelections();
+            updateNextButton(); // Now shows the Next button
+          }
+        }, 400);
+      }
+    }
+
+    // ── Fix 3: colour circles — data-colour set via JS ──
+    const l1Circles  = Array.from(document.querySelectorAll('#screen-question .colour-circle'));
+    const colourKeys = ['green', 'pink', 'yellow', 'blue'];
+    l1Circles.forEach((circle, i) => {
+      circle.dataset.colour = colourKeys[i]; // add data-colour without touching HTML
+      circle.onclick = function() {
+        selectedColour = this.dataset.colour;
+        document.querySelectorAll('#screen-question .colour-circle').forEach(c => {
+          c.style.outline   = 'none';
+          c.style.transform = 'scale(1)';
+        });
+        this.style.outline   = '3px solid #000';
+        this.style.transform = 'scale(1.15)';
+        handleSelection();
+      };
+    });
+
+    // ── Fix 1 + 4: tiles — select only, render on Next ─
+    const l1Tiles  = Array.from(document.querySelectorAll('#screen-question .opt-tile'));
+    const tileKeys = ['blob', 'cloud', 'spiky', 'square'];
+    l1Tiles.forEach((tile, i) => {
+      tile.style.cursor = 'pointer';
+      const img = tile.querySelector('img');
+      if (img) img.style.pointerEvents = 'none';
+      tile.onclick = function() {
+        if (activeCard === 'done') return;
+        selectedShape = tileKeys[i];
+        l1Tiles.forEach(t => {
+          t.style.border     = '2px solid transparent';
+          t.style.background = '#f8f0dd';
+        });
+        this.style.border     = '3px solid #000000';
+        this.style.background = '#f8f0dd';
+        handleSelection();
+      };
+    });
+
+    // ── Wire Next button ───────────────────────────────
+    const btnNext = document.getElementById('btn-next');
+    btnNext.disabled = false;        // remove HTML disabled; visual state via opacity
+    btnNext.addEventListener('click', handleNext);
+
+    // Initialise visual state
+    updateNextButton();
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════
+       LAYER 2 — Openness
+  ═══════════════════════════════════════════════════ -->
+  <script>
+    // ── Layer tracker ──────────────────────────────────
+    let currentLayer = 1;
+
+    // Override updateNextButton to be layer-aware
+    updateNextButton = function() {
+      const btn  = document.getElementById('btn-next');
+      const done = currentLayer === 2 ? (l2ActiveCard === 'done') : (activeCard === 'done');
+      btn.style.opacity       = done ? '1'    : '0.4';
+      btn.style.pointerEvents = done ? 'auto' : 'none';
+    };
+    updateNextButton(); // re-apply with new logic
+
+    // ── Layer 2 state ──────────────────────────────────
+    let l2SelectedShape    = null;
+    let l2SelectedColour   = null;
+    let l2ActiveCard       = 'online';
+    let l2AutoAdvanceTimer = null;
+
+    const L2_TILES = [
+      { key:'square', file:'openness-square.svg', label:'I am pretty guarded'           },
+      { key:'star',   file:'openness-star.svg',   label:'I open up, but context matters' },
+      { key:'eight',  file:'openness-eight.svg',  label:'I share what feels safe or earned' },
+      { key:'blob',   file:'openness-blob.svg',   label:'I am an open book'              },
+    ];
+
+    const L2_COLOUR_KEYS   = ['yellow',  'pink',    'greygreen', 'blue'   ];
+    const L2_COLOUR_VALUES = ['#ffd700', '#ff69b4', '#8a9a6a',   '#87ceeb'];
+    const L2_COLOUR_MAP    = { yellow:'#ffd700', pink:'#ff69b4', greygreen:'#8a9a6a', blue:'#87ceeb' };
+
+    // ── renderOpennessInCard ────────────────────────────
+    // Fix 1: appends layer2-shape to the Layer 1 content wrapper (position:relative)
+    // so position:absolute centering works without touching the card's own position:absolute
+    async function renderOpennessInCard(cardId, svgFile, colour) {
+      const card = document.getElementById(cardId);
+
+      // Remove any existing layer 2 element
+      const existing = card.querySelector('.layer2-shape');
+      if (existing) existing.remove();
+
+      const response = await fetch('assets/' + svgFile);
+      const svgText  = await response.text();
+      const parser   = new DOMParser();
+      const doc      = parser.parseFromString(svgText, 'image/svg+xml');
+      const svg      = doc.querySelector('svg');
+
+      svg.querySelectorAll('path, circle, rect, ellipse').forEach(el => {
+        if (el.getAttribute('fill') !== 'none') {
+          el.setAttribute('fill', colour || 'transparent');
+        }
+        el.setAttribute('stroke', '#000000');
+        el.setAttribute('stroke-width', '3');
+      });
+
+      // Fix 1: wrapper centered at 45%
+      const wrapper = document.createElement('div');
+      wrapper.className = 'layer2-shape';
+      wrapper.style.cssText = [
+        'position:absolute',
+        'top:50%',
+        'left:50%',
+        'transform:translate(-50%,-50%)',
+        'width:45%',
+        'height:45%',
+        'display:flex',
+        'align-items:center',
+        'justify-content:center',
+        'pointer-events:none',
+      ].join(';');
+
+      svg.style.cssText = 'width:100%;height:100%;';
+      wrapper.appendChild(svg);
+
+      // Fix 1: position:relative on Layer 1 content wrapper (not the card)
+      // so the absolute centering works without disrupting card's own absolute layout
+      const l1Content = card.querySelector(':scope > div:not(.layer2-shape)');
+      if (l1Content) {
+        l1Content.style.position = 'relative';
+        l1Content.style.overflow = 'hidden';
+        l1Content.appendChild(wrapper);
+      } else {
+        card.style.position = 'relative';
+        card.appendChild(wrapper);
+      }
+    }
+
+    // ── clearL2Selections ──────────────────────────────
+    // Fix 3: reset transform scale instead of border
+    function clearL2Selections() {
+      document.querySelectorAll('#screen-question .l2-tile').forEach(t => {
+        t.style.transform = 'scale(1)';
+      });
+      document.querySelectorAll('#screen-question .colour-circle-l2').forEach(c => {
+        c.style.outline   = 'none';
+        c.style.transform = 'scale(1)';
+      });
+    }
+
+    // ── handleL2Selection ──────────────────────────────
+    async function handleL2Selection() {
+      if (!l2SelectedShape) return;
+
+      const cardId = l2ActiveCard === 'online' ? 'card-online' : 'card-offline';
+      const fill   = l2SelectedColour ? L2_COLOUR_MAP[l2SelectedColour] : null;
+      await renderOpennessInCard(cardId, L2_TILES.find(t => t.key === l2SelectedShape).file, fill);
+
+      clearTimeout(l2AutoAdvanceTimer);
+      if (l2SelectedShape && l2SelectedColour) {
+        l2AutoAdvanceTimer = setTimeout(() => {
+          if (l2ActiveCard === 'online') {
+            l2ActiveCard = 'offline';
+            document.getElementById('card-online').style.border  = '3px solid #000';
+            document.getElementById('card-offline').style.border = '5px solid #ba8edb';
+            labelOnline.style.color  = '#cf4538';
+            labelOffline.style.color = '#ba8edb';
+            l2SelectedShape = l2SelectedColour = null;
+            clearL2Selections();
+            updateNextButton();
+          } else if (l2ActiveCard === 'offline') {
+            l2ActiveCard = 'done';
+            document.getElementById('card-offline').style.border = '3px solid #000';
+            labelOffline.style.color = '#cf4538';
+            l2SelectedShape = l2SelectedColour = null;
+            clearL2Selections();
+            updateNextButton(); // Next → becomes fully orange
+          }
+        }, 400);
+      }
+    }
+
+    // ── initLayer2 ─────────────────────────────────────
+    // Swaps options bar content — does NOT touch the card content
+    function initLayer2() {
+      currentLayer = 2;
+      const qBar = document.querySelector('#screen-question .q-bar');
+
+      // Update question text
+      document.getElementById('question-text').textContent =
+        '2. when it comes to expressing yourself or opening up, which one describes you the best?';
+
+      // Remove Layer 1 tiles and colour controls
+      document.querySelectorAll('#screen-question .opt-tile').forEach(t => t.remove());
+      const l1ColLabel = document.querySelector('#screen-question .colour-label');
+      if (l1ColLabel) l1ColLabel.remove();
+      document.querySelectorAll('#screen-question .colour-circle').forEach(c => c.remove());
+
+      // Build Layer 2 tiles (with label text inside each tile)
+      const LEFTS = [50, 206, 362, 518];
+      L2_TILES.forEach((tileData, i) => {
+        const tile = document.createElement('div');
+        tile.className = 'opt-tile l2-tile';
+        tile.style.cssText = [
+          `left:${LEFTS[i]}px`,
+          'top:52px',
+          'width:140px',
+          'height:130px',
+          'flex-direction:column',
+          'align-items:center',
+          'justify-content:center',
+          'gap:5px',
+          'padding:8px 4px',
+          'cursor:pointer',
+        ].join(';');
+
+        const img = document.createElement('img');
+        img.src           = 'assets/' + tileData.file;
+        img.style.cssText = 'height:70px;width:auto;pointer-events:none;flex-shrink:0;';
+        img.alt           = tileData.label;
+
+        const lbl = document.createElement('p');
+        lbl.textContent   = tileData.label;
+        lbl.style.cssText = [
+          'font-size:11px',
+          'font-family:"IBM Plex Mono",monospace',
+          'font-weight:500',
+          'color:#2a2a2a',
+          'text-align:center',
+          'line-height:1.3',
+          'max-width:128px',
+          'word-wrap:break-word',
+          'overflow-wrap:break-word',
+          'padding:0',
+          'margin:0',
+          'pointer-events:none',
+        ].join(';');
+
+        tile.appendChild(img);
+        tile.appendChild(lbl);
+
+        tile.onclick = function() {
+          if (l2ActiveCard === 'done') return;
+          l2SelectedShape = tileData.key;
+          document.querySelectorAll('#screen-question .l2-tile').forEach(t => {
+            t.style.border     = '2px solid transparent';
+            t.style.background = '#f8f0dd';
+          });
+          this.style.border     = '3px solid #000000';
+          this.style.background = '#f8f0dd';
+          playClickSound();
+          handleL2Selection();
+        };
+
+        qBar.appendChild(tile);
+      });
+
+      // Build Layer 2 colour label
+      const colLbl = document.createElement('p');
+      colLbl.className    = 'colour-label';
+      colLbl.textContent  = 'give it your colour :';
+      colLbl.style.cssText = [
+        'position:absolute',
+        'left:50px',
+        'top:200px',
+        'font-size:14px',
+        'font-weight:500',
+        'color:#ffffff',
+        'white-space:nowrap',
+        'line-height:40px',
+      ].join(';');
+      qBar.appendChild(colLbl);
+
+      // Build Layer 2 colour circles
+      const CIRCLE_LEFTS = [238, 286, 334, 382];
+      L2_COLOUR_KEYS.forEach((key, i) => {
+        const c = document.createElement('div');
+        c.className      = 'colour-circle colour-circle-l2';
+        c.dataset.colour = key;
+        c.style.cssText  = [
+          'position:absolute',
+          'top:196px',
+          `left:${CIRCLE_LEFTS[i]}px`,
+          'width:40px',
+          'height:40px',
+          'border-radius:50%',
+          'border:2px solid #000',
+          `background:${L2_COLOUR_VALUES[i]}`,
+          'cursor:pointer',
+          'transition:transform 0.1s',
+        ].join(';');
+
+        c.onclick = function() {
+          if (l2ActiveCard === 'done') return;
+          l2SelectedColour = this.dataset.colour;
+          document.querySelectorAll('#screen-question .colour-circle-l2').forEach(x => {
+            x.style.outline   = 'none';
+            x.style.transform = 'scale(1)';
+          });
+          this.style.outline   = '3px solid #000';
+          this.style.transform = 'scale(1.15)';
+          playClickSound();
+          handleL2Selection();
+        };
+
+        qBar.appendChild(c);
+      });
+
+      // Reset Layer 2 state
+      l2SelectedShape = l2SelectedColour = null;
+      l2ActiveCard    = 'online';
+
+      // Restore Online card as active (purple border), clear is-active classes
+      document.getElementById('card-online').classList.remove('is-active');
+      document.getElementById('card-offline').classList.remove('is-active');
+      document.getElementById('card-online').style.border  = '5px solid #ba8edb';
+      document.getElementById('card-offline').style.border = '3px solid #000';
+      labelOnline.style.color  = '#ba8edb';
+      labelOffline.style.color = '#cf4538';
+
+      updateNextButton(); // starts disabled
+    }
+
+    // ── Replace btnNext listener with layer-aware dispatcher ──
+    // (Removes the Layer 1 handleNext listener; replaces with dispatcher)
+    const _l2Btn = document.getElementById('btn-next');
+    _l2Btn.removeEventListener('click', handleNext);
+    _l2Btn.addEventListener('click', function handleNextDispatch() {
+      if (currentLayer === 1) {
+        if (activeCard !== 'done') return;
+        initLayer2();
+      } else if (currentLayer === 2) {
+        if (l2ActiveCard !== 'done') return;
+        console.log('Layer 2 complete — advancing to Layer 3');
+        // TODO: initLayer3();
+      }
+    });
+  </script>
+
 </body>
 </html>
