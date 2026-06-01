@@ -155,10 +155,20 @@
     .col-label-online  { left: 286px; }
     .col-label-offline { left: 660px; }
 
-    /* Portrait cards — 334×334, 3px black border, 24px radius */
-    .q-card {
+    /* Cards row — flex container positioned where the cards used to sit */
+    .cards-row {
       position: absolute;
       top: 109px;
+      left: 286px;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 40px;
+    }
+
+    /* Portrait cards — 334×334, 3px black border, 24px radius */
+    .q-card {
+      position: relative;
       width: 334px;
       height: 334px;
       background: var(--white);
@@ -166,9 +176,8 @@
       border: 3px solid var(--ink);
       cursor: pointer;
       overflow: hidden;
+      flex-shrink: 0;
     }
-    .q-card-online  { left: 286px; }
-    .q-card-offline { left: 660px; }
 
     /* Active card gets 5px purple border */
     .q-card.is-active { border: 5px solid var(--purple); }
@@ -344,8 +353,10 @@
       <p class="col-label col-label-online">Online</p>
       <p class="col-label col-label-offline">Offline</p>
 
-      <div class="q-card q-card-online"></div>
-      <div class="q-card q-card-offline"></div>
+      <div class="cards-row">
+        <div class="q-card q-card-online"></div>
+        <div class="q-card q-card-offline"></div>
+      </div>
 
       <div class="q-bar">
         <p class="bar-intro-text">
@@ -371,21 +382,23 @@
         <img src="googly-eyes.svg" width="110" alt="" aria-hidden="true">
       </div>
 
-      <p class="col-label col-label-online">Online</p>
-      <p class="col-label col-label-offline">Offline</p>
+      <p class="col-label col-label-online" id="label-online">Online</p>
+      <p class="col-label col-label-offline" id="label-offline">Offline</p>
 
-      <div class="q-card q-card-online is-active" id="card-online" onclick="document.getElementById('tab-online').click()">
-        <div class="card-canvas" id="canvas-online">
-          <svg id="svg-online" viewBox="0 0 334 334"></svg>
+      <div class="cards-row">
+        <div class="q-card q-card-online is-active" id="card-online" onclick="document.getElementById('tab-online').click()">
+          <div class="card-canvas" id="canvas-online">
+            <svg id="svg-online" viewBox="0 0 334 334"></svg>
+          </div>
+        </div>
+        <div class="q-card q-card-offline" id="card-offline" onclick="document.getElementById('tab-offline').click()">
+          <div class="card-canvas" id="canvas-offline">
+            <svg id="svg-offline" viewBox="0 0 334 334"></svg>
+          </div>
         </div>
       </div>
-      <div class="q-card q-card-offline" id="card-offline" onclick="document.getElementById('tab-offline').click()">
-        <div class="card-canvas" id="canvas-offline">
-          <svg id="svg-offline" viewBox="0 0 334 334"></svg>
-        </div>
-      </div>
 
-      <div class="q-bar">
+      <div class="q-bar" id="options-bar">
 
         <p class="q-bar-text" id="question-text">1. every conversation has a shape. which one is yours?</p>
 
@@ -571,15 +584,6 @@
        LAYER 1 — Conversation Shape Interaction
   ═══════════════════════════════════════════════════ -->
   <script>
-    // ── Fix 1: actual SVG files via fetch ──────────────
-    const SHAPE_FILES = {
-      'blob':   'shape-blob.svg',
-      'cloud':  'shape-cloud.svg',
-      'spiky':  'shape-spiky.svg',
-      'square': 'shape-square.svg',
-    };
-
-    // ── Fix 3: colour map ──────────────────────────────
     const COLOUR_MAP = {
       'green':  '#8bc34a',
       'pink':   '#ff69b4',
@@ -587,30 +591,38 @@
       'blue':   '#87ceeb',
     };
 
-    // ── Fix 1: fetch-based render ──────────────────────
-    async function renderShapeInCard(cardId, svgFile, colour) {
+    const SHAPE_FILES = {
+      'blob':   'assets/shape-blob.svg',
+      'cloud':  'assets/shape-cloud.svg',
+      'spiky':  'assets/shape-spiky.svg',
+      'square': 'assets/shape-square.svg',
+    };
+
+    async function renderShapeInCard(cardId, shapeKey, colour) {
       const card = document.getElementById(cardId);
       try {
-        const response = await fetch('assets/' + svgFile);
+        const response = await fetch(SHAPE_FILES[shapeKey]);
         const svgText  = await response.text();
         const parser   = new DOMParser();
         const doc      = parser.parseFromString(svgText, 'image/svg+xml');
         const svg      = doc.querySelector('svg');
-        svg.style.cssText = 'width:100%; height:100%;';
+        svg.style.cssText = 'width:100%;height:100%;';
         svg.querySelectorAll('path, circle, rect, ellipse').forEach(el => {
           if (el.getAttribute('fill') !== 'none' && el.getAttribute('fill') !== null) {
-            el.setAttribute('fill', colour);
+            el.setAttribute('fill', colour || 'transparent');
           }
           el.setAttribute('stroke', '#000000');
           el.setAttribute('stroke-width', '3');
         });
-        card.innerHTML = '';
         const wrapper = document.createElement('div');
-        wrapper.style.cssText = 'width:100%; height:100%; padding:20px; box-sizing:border-box; display:flex; align-items:center; justify-content:center;';
+        wrapper.className = 'layer1-shape';
+        wrapper.style.cssText = 'width:100%;height:100%;padding:16px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;';
         wrapper.appendChild(svg);
+        const existing = card.querySelector('.layer1-shape');
+        if (existing) existing.remove();
         card.appendChild(wrapper);
       } catch(e) {
-        console.error('Could not load SVG:', svgFile, e);
+        console.error('Could not load SVG:', shapeKey, e);
       }
     }
 
@@ -659,11 +671,10 @@
     let autoAdvanceTimer = null;
 
     async function handleSelection() {
-      // Change 1: always preview shape immediately (transparent if no colour yet)
       if (selectedShape) {
         const cardId     = activeCard === 'online' ? 'card-online' : 'card-offline';
         const fillColour = selectedColour ? COLOUR_MAP[selectedColour] : 'transparent';
-        await renderShapeInCard(cardId, SHAPE_FILES[selectedShape], fillColour);
+        await renderShapeInCard(cardId, selectedShape, fillColour);
       }
 
       // Change 2: auto-advance 400ms after BOTH are selected
@@ -757,9 +768,20 @@
 
     // ── Layer 2 state ──────────────────────────────────
     let l2SelectedShape    = null;
+    let l2SelectedFile     = null;
     let l2SelectedColour   = null;
     let l2ActiveCard       = 'online';
     let l2AutoAdvanceTimer = null;
+
+    // ── Layer 2 per-card captures (used by Layer 3) ────
+    let l2OnlineColour  = null;
+    let l2OfflineColour = null;
+    let l2OnlineFile    = null;
+    let l2OfflineFile   = null;
+
+    // ── Layer 3 state ──────────────────────────────────
+    let l3SelectedRings = null;
+    let l3ActiveCard    = 'online';
 
     const L2_TILES = [
       { key:'square', file:'openness-square.svg', label:'I am pretty guarded'           },
@@ -772,59 +794,40 @@
     const L2_COLOUR_VALUES = ['#ffd700', '#ff69b4', '#8a9a6a',   '#87ceeb'];
     const L2_COLOUR_MAP    = { yellow:'#ffd700', pink:'#ff69b4', greygreen:'#8a9a6a', blue:'#87ceeb' };
 
-    // ── renderOpennessInCard ────────────────────────────
-    // Fix 1: appends layer2-shape to the Layer 1 content wrapper (position:relative)
-    // so position:absolute centering works without touching the card's own position:absolute
-    async function renderOpennessInCard(cardId, svgFile, colour) {
+    const OPENNESS_FILES = {
+      'square': 'assets/openness-square.svg',
+      'star':   'assets/openness-star.svg',
+      'eight':  'assets/openness-eight.svg',
+      'blob':   'assets/openness-blob.svg',
+    };
+
+    async function renderOpennessInCard(cardId, shapeKey, colour) {
       const card = document.getElementById(cardId);
-
-      // Remove any existing layer 2 element
-      const existing = card.querySelector('.layer2-shape');
-      if (existing) existing.remove();
-
-      const response = await fetch('assets/' + svgFile);
-      const svgText  = await response.text();
-      const parser   = new DOMParser();
-      const doc      = parser.parseFromString(svgText, 'image/svg+xml');
-      const svg      = doc.querySelector('svg');
-
-      svg.querySelectorAll('path, circle, rect, ellipse').forEach(el => {
-        if (el.getAttribute('fill') !== 'none') {
-          el.setAttribute('fill', colour || 'transparent');
-        }
-        el.setAttribute('stroke', '#000000');
-        el.setAttribute('stroke-width', '3');
-      });
-
-      // Fix 1: wrapper centered at 45%
-      const wrapper = document.createElement('div');
-      wrapper.className = 'layer2-shape';
-      wrapper.style.cssText = [
-        'position:absolute',
-        'top:50%',
-        'left:50%',
-        'transform:translate(-50%,-50%)',
-        'width:45%',
-        'height:45%',
-        'display:flex',
-        'align-items:center',
-        'justify-content:center',
-        'pointer-events:none',
-      ].join(';');
-
-      svg.style.cssText = 'width:100%;height:100%;';
-      wrapper.appendChild(svg);
-
-      // Fix 1: position:relative on Layer 1 content wrapper (not the card)
-      // so the absolute centering works without disrupting card's own absolute layout
-      const l1Content = card.querySelector(':scope > div:not(.layer2-shape)');
-      if (l1Content) {
-        l1Content.style.position = 'relative';
-        l1Content.style.overflow = 'hidden';
-        l1Content.appendChild(wrapper);
-      } else {
+      try {
+        const response = await fetch(OPENNESS_FILES[shapeKey]);
+        const svgText  = await response.text();
+        const parser   = new DOMParser();
+        const doc      = parser.parseFromString(svgText, 'image/svg+xml');
+        const svg      = doc.querySelector('svg');
+        svg.querySelectorAll('path, circle, rect, ellipse').forEach(el => {
+          if (el.getAttribute('fill') !== 'none') {
+            el.setAttribute('fill', colour || 'transparent');
+          }
+          el.setAttribute('stroke', '#000000');
+          el.setAttribute('stroke-width', '3');
+        });
+        const existing = card.querySelector('.layer2-shape');
+        if (existing) existing.remove();
+        const wrapper = document.createElement('div');
+        wrapper.className = 'layer2-shape';
+        wrapper.style.cssText = 'position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);width:46%;height:46%;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2;';
+        svg.style.cssText = 'width:100%;height:100%;';
+        wrapper.appendChild(svg);
         card.style.position = 'relative';
+        card.style.overflow = 'hidden';
         card.appendChild(wrapper);
+      } catch(e) {
+        console.error('Could not load SVG:', shapeKey, e);
       }
     }
 
@@ -845,13 +848,15 @@
       if (!l2SelectedShape) return;
 
       const cardId = l2ActiveCard === 'online' ? 'card-online' : 'card-offline';
-      const fill   = l2SelectedColour ? L2_COLOUR_MAP[l2SelectedColour] : null;
-      await renderOpennessInCard(cardId, L2_TILES.find(t => t.key === l2SelectedShape).file, fill);
+      const fill   = l2SelectedColour || null;
+      await renderOpennessInCard(cardId, l2SelectedShape, fill);
 
       clearTimeout(l2AutoAdvanceTimer);
       if (l2SelectedShape && l2SelectedColour) {
         l2AutoAdvanceTimer = setTimeout(() => {
           if (l2ActiveCard === 'online') {
+            l2OnlineColour = l2SelectedColour;
+            l2OnlineFile   = l2SelectedFile;
             l2ActiveCard = 'offline';
             document.getElementById('card-online').style.border  = '3px solid #000';
             document.getElementById('card-offline').style.border = '5px solid #ba8edb';
@@ -861,145 +866,105 @@
             clearL2Selections();
             updateNextButton();
           } else if (l2ActiveCard === 'offline') {
+            l2OfflineColour = l2SelectedColour;
+            l2OfflineFile   = l2SelectedFile;
             l2ActiveCard = 'done';
             document.getElementById('card-offline').style.border = '3px solid #000';
             labelOffline.style.color = '#cf4538';
             l2SelectedShape = l2SelectedColour = null;
             clearL2Selections();
-            updateNextButton(); // Next → becomes fully orange
+            updateNextButton();
           }
         }, 400);
       }
     }
 
-    // ── initLayer2 ─────────────────────────────────────
-    // Swaps options bar content — does NOT touch the card content
     function initLayer2() {
       currentLayer = 2;
-      const qBar = document.querySelector('#screen-question .q-bar');
 
-      // Update question text
-      document.getElementById('question-text').textContent =
-        '2. when it comes to expressing yourself or opening up, which one describes you the best?';
+      const bar = document.getElementById('options-bar');
+      bar.innerHTML = '';
+      bar.style.cssText = 'background:#f16f33;border-radius:20px;padding:20px 24px;width:708px;box-sizing:border-box;display:flex;flex-direction:column;gap:16px;';
 
-      // Remove Layer 1 tiles and colour controls
-      document.querySelectorAll('#screen-question .opt-tile').forEach(t => t.remove());
-      const l1ColLabel = document.querySelector('#screen-question .colour-label');
-      if (l1ColLabel) l1ColLabel.remove();
-      document.querySelectorAll('#screen-question .colour-circle').forEach(c => c.remove());
+      // Question text
+      const q = document.createElement('p');
+      q.textContent = '2. when it comes to expressing yourself or opening up, which one describes you the best?';
+      q.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:16px;color:#ffffff;margin:0;line-height:1.4;';
+      bar.appendChild(q);
 
-      // Build Layer 2 tiles (with label text inside each tile)
-      const LEFTS = [50, 206, 362, 518];
-      L2_TILES.forEach((tileData, i) => {
+      // Tiles row
+      const tilesRow = document.createElement('div');
+      tilesRow.style.cssText = 'display:flex;flex-direction:row;gap:20px;justify-content:center;align-items:flex-start;width:100%;';
+
+      const tileData = [
+        { key:'square', file:'openness-square.svg', label:'I am pretty guarded' },
+        { key:'star',   file:'openness-star.svg',   label:'I open up, but context matters' },
+        { key:'eight',  file:'openness-eight.svg',  label:'I share what feels safe or earned' },
+        { key:'blob',   file:'openness-blob.svg',   label:'I am an open book' }
+      ];
+
+      tileData.forEach(td => {
         const tile = document.createElement('div');
-        tile.className = 'opt-tile l2-tile';
-        tile.style.cssText = [
-          `left:${LEFTS[i]}px`,
-          'top:52px',
-          'width:140px',
-          'height:130px',
-          'flex-direction:column',
-          'align-items:center',
-          'justify-content:center',
-          'gap:5px',
-          'padding:8px 4px',
-          'cursor:pointer',
-        ].join(';');
+        tile.className = 'l2-tile';
+        tile.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;flex:1;max-width:120px;';
 
         const img = document.createElement('img');
-        img.src           = 'assets/' + tileData.file;
-        img.style.cssText = 'height:70px;width:auto;pointer-events:none;flex-shrink:0;';
-        img.alt           = tileData.label;
+        img.src = 'assets/' + td.file;
+        img.style.cssText = 'width:80px;height:80px;object-fit:contain;display:block;';
 
-        const lbl = document.createElement('p');
-        lbl.textContent   = tileData.label;
-        lbl.style.cssText = [
-          'font-size:11px',
-          'font-family:"IBM Plex Mono",monospace',
-          'font-weight:500',
-          'color:#2a2a2a',
-          'text-align:center',
-          'line-height:1.3',
-          'max-width:128px',
-          'word-wrap:break-word',
-          'overflow-wrap:break-word',
-          'padding:0',
-          'margin:0',
-          'pointer-events:none',
-        ].join(';');
+        const lbl = document.createElement('span');
+        lbl.textContent = td.label;
+        lbl.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:11px;color:#fff5e6;text-align:center;line-height:1.3;display:block;';
 
         tile.appendChild(img);
         tile.appendChild(lbl);
 
         tile.onclick = function() {
-          if (l2ActiveCard === 'done') return;
-          l2SelectedShape = tileData.key;
-          document.querySelectorAll('#screen-question .l2-tile').forEach(t => {
-            t.style.border     = '2px solid transparent';
-            t.style.background = '#f8f0dd';
-          });
-          this.style.border     = '3px solid #000000';
-          this.style.background = '#f8f0dd';
-          playClickSound();
+          document.querySelectorAll('.l2-tile img').forEach(i => i.style.transform = 'scale(1)');
+          img.style.transform = 'scale(1.08)';
+          l2SelectedShape = td.key;
+          l2SelectedFile  = td.file;
           handleL2Selection();
         };
 
-        qBar.appendChild(tile);
+        tilesRow.appendChild(tile);
       });
 
-      // Build Layer 2 colour label
-      const colLbl = document.createElement('p');
-      colLbl.className    = 'colour-label';
-      colLbl.textContent  = 'give it your colour :';
-      colLbl.style.cssText = [
-        'position:absolute',
-        'left:50px',
-        'top:200px',
-        'font-size:14px',
-        'font-weight:500',
-        'color:#ffffff',
-        'white-space:nowrap',
-        'line-height:40px',
-      ].join(';');
-      qBar.appendChild(colLbl);
+      bar.appendChild(tilesRow);
 
-      // Build Layer 2 colour circles
-      const CIRCLE_LEFTS = [238, 286, 334, 382];
-      L2_COLOUR_KEYS.forEach((key, i) => {
-        const c = document.createElement('div');
-        c.className      = 'colour-circle colour-circle-l2';
-        c.dataset.colour = key;
-        c.style.cssText  = [
-          'position:absolute',
-          'top:196px',
-          `left:${CIRCLE_LEFTS[i]}px`,
-          'width:40px',
-          'height:40px',
-          'border-radius:50%',
-          'border:2px solid #000',
-          `background:${L2_COLOUR_VALUES[i]}`,
-          'cursor:pointer',
-          'transition:transform 0.1s',
-        ].join(';');
+      // Colour row
+      const colourRow = document.createElement('div');
+      colourRow.style.cssText = 'display:flex;flex-direction:row;align-items:center;gap:12px;';
 
-        c.onclick = function() {
-          if (l2ActiveCard === 'done') return;
-          l2SelectedColour = this.dataset.colour;
-          document.querySelectorAll('#screen-question .colour-circle-l2').forEach(x => {
-            x.style.outline   = 'none';
-            x.style.transform = 'scale(1)';
-          });
-          this.style.outline   = '3px solid #000';
-          this.style.transform = 'scale(1.15)';
-          playClickSound();
+      const colourLabel = document.createElement('span');
+      colourLabel.textContent = 'give it your colour :';
+      colourLabel.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:14px;color:#ffffff;';
+      colourRow.appendChild(colourLabel);
+
+      const l2Colours = [
+        { key:'cyan',   hex:'#61E8F2' },
+        { key:'purple', hex:'#D681E3' },
+        { key:'orange', hex:'#FF9F5F' },
+        { key:'indigo', hex:'#9593DE' }
+      ];
+
+      l2Colours.forEach(c => {
+        const circle = document.createElement('div');
+        circle.style.cssText = `width:36px;height:36px;border-radius:50%;background:${c.hex};border:2px solid #000;cursor:pointer;flex-shrink:0;`;
+        circle.onclick = function() {
+          document.querySelectorAll('.l2-colour').forEach(ci => ci.style.outline = 'none');
+          circle.style.outline = '3px solid #000';
+          l2SelectedColour = c.hex;
           handleL2Selection();
         };
-
-        qBar.appendChild(c);
+        circle.className = 'l2-colour colour-circle-l2';
+        colourRow.appendChild(circle);
       });
+
+      bar.appendChild(colourRow);
 
       // Reset Layer 2 state
-      l2SelectedShape = l2SelectedColour = null;
+      l2SelectedShape = l2SelectedFile = l2SelectedColour = null;
       l2ActiveCard    = 'online';
 
       // Restore Online card as active (purple border), clear is-active classes
@@ -1010,7 +975,160 @@
       labelOnline.style.color  = '#ba8edb';
       labelOffline.style.color = '#cf4538';
 
-      updateNextButton(); // starts disabled
+      updateNextButton();
+    }
+
+    // ── Layer 3 functions ──────────────────────────────
+    function makeRingPreview(count) {
+      const rings = {
+        3: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="40" cy="40" rx="36" ry="36" fill="none" stroke="white" stroke-width="2" opacity="0.3"/>
+          <ellipse cx="40" cy="40" rx="25" ry="25" fill="none" stroke="white" stroke-width="2" opacity="0.6"/>
+          <ellipse cx="40" cy="40" rx="13" ry="13" fill="white" opacity="0.9"/>
+        </svg>`,
+        2: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="40" cy="40" rx="36" ry="36" fill="none" stroke="white" stroke-width="2" opacity="0.4"/>
+          <ellipse cx="40" cy="40" rx="18" ry="18" fill="white" opacity="0.9"/>
+        </svg>`,
+        1: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="40" cy="40" rx="28" ry="28" fill="white" opacity="0.9"/>
+        </svg>`
+      };
+      return rings[count];
+    }
+
+    function renderConnectionInCard(cardId, ringCount) {
+      const card = document.getElementById(cardId);
+      const existing = card.querySelector('.layer3-rings');
+      if (existing) existing.remove();
+
+      // Fix 1: clip rings inside card boundary
+      card.style.position = 'relative';
+      card.style.overflow = 'hidden';
+
+      // Fix 3: hide empty card-canvas SVG — it renders a browser placeholder cross
+      const canvas = card.querySelector('.card-canvas');
+      if (canvas) canvas.style.display = 'none';
+
+      const colour  = cardId === 'card-online' ? l2OnlineColour  : l2OfflineColour;
+      const svgFile = cardId === 'card-online' ? l2OnlineFile    : l2OfflineFile;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'layer3-rings';
+      wrapper.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:3;';
+
+      // Fix 2: sizes constrained within the Layer 2 shape area
+      const sizes = {
+        3: [{s:46,o:0.3},{s:34,o:0.6},{s:22,o:1.0}],
+        2: [{s:46,o:0.4},{s:26,o:1.0}],
+        1: [{s:36,o:1.0}]
+      };
+
+      function tintColour(hex, factor) {
+        const r = parseInt(hex.slice(1,3),16);
+        const g = parseInt(hex.slice(3,5),16);
+        const b = parseInt(hex.slice(5,7),16);
+        const nr = Math.round(r + (255-r)*factor);
+        const ng = Math.round(g + (255-g)*factor);
+        const nb = Math.round(b + (255-b)*factor);
+        return `rgb(${nr},${ng},${nb})`;
+      }
+
+      const tintFactors = {
+        3: [0.0, 0.35, 0.65],
+        2: [0.0, 0.5],
+        1: [0.2]
+      };
+
+      sizes[ringCount].forEach((ring, idx) => {
+        const ringColour = tintColour(colour, tintFactors[ringCount][idx]);
+        const ringDiv = document.createElement('div');
+        ringDiv.style.cssText = `position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);width:${ring.s}%;height:${ring.s}%;opacity:${ring.o};display:flex;align-items:center;justify-content:center;pointer-events:none;`;
+
+        fetch('assets/' + svgFile)
+          .then(r => r.text())
+          .then(svgText => {
+            const parser = new DOMParser();
+            const doc    = parser.parseFromString(svgText, 'image/svg+xml');
+            const svg    = doc.querySelector('svg');
+            svg.querySelectorAll('path,circle,rect,ellipse').forEach(el => {
+              el.setAttribute('fill', ringColour);
+              el.removeAttribute('stroke');
+              el.setAttribute('stroke', 'none');
+              el.setAttribute('stroke-width', '0');
+            });
+            svg.style.cssText = 'width:100%;height:100%;';
+            ringDiv.appendChild(svg);
+          });
+
+        wrapper.appendChild(ringDiv);
+      });
+
+      card.appendChild(wrapper);
+    }
+
+    function initLayer3() {
+      const bar = document.getElementById('options-bar');
+      bar.innerHTML = '';
+      bar.style.cssText = 'background:#f16f33;border-radius:20px;padding:20px 24px;width:708px;box-sizing:border-box;display:flex;flex-direction:column;gap:16px;';
+
+      const q = document.createElement('p');
+      q.textContent = '3. how connected do you feel to the people around you?';
+      q.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:16px;color:#ffffff;margin:0;line-height:1.4;';
+      bar.appendChild(q);
+
+      const tilesRow = document.createElement('div');
+      tilesRow.style.cssText = 'display:flex;flex-direction:row;gap:20px;justify-content:center;align-items:flex-start;width:100%;';
+
+      const options = [
+        { rings: 3, label: 'i like to vibe with every one' },
+        { rings: 2, label: "eh... it's balanced i guess" },
+        { rings: 1, label: 'i am happy with my few close friends' }
+      ];
+
+      options.forEach(opt => {
+        const tile = document.createElement('div');
+        tile.className = 'l3-tile';
+        tile.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;flex:1;max-width:180px;background:rgba(255,255,255,0.15);border-radius:12px;padding:16px 12px;';
+
+        const preview = document.createElement('div');
+        preview.innerHTML = makeRingPreview(opt.rings);
+        preview.querySelector('svg').style.cssText = 'width:60px;height:60px;';
+        tile.appendChild(preview);
+
+        const lbl = document.createElement('span');
+        lbl.textContent = opt.label;
+        lbl.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:11px;color:#fff5e6;text-align:center;line-height:1.4;';
+        tile.appendChild(lbl);
+
+        tile.onclick = function() {
+          document.querySelectorAll('.l3-tile').forEach(t => t.style.background = 'rgba(255,255,255,0.15)');
+          tile.style.background = 'rgba(255,255,255,0.35)';
+          l3SelectedRings = opt.rings;
+          renderConnectionInCard(l3ActiveCard === 'online' ? 'card-online' : 'card-offline', opt.rings);
+          setTimeout(() => {
+            if (l3ActiveCard === 'online') {
+              l3ActiveCard = 'offline';
+              document.getElementById('card-online').style.border  = '3px solid #000';
+              document.getElementById('card-offline').style.border = '5px solid #ba8edb';
+              document.getElementById('label-online').style.color  = '#cf4538';
+              document.getElementById('label-offline').style.color = '#ba8edb';
+              document.querySelectorAll('.l3-tile').forEach(t => t.style.background = 'rgba(255,255,255,0.15)');
+              l3SelectedRings = null;
+            } else {
+              l3ActiveCard = 'done';
+              document.getElementById('card-offline').style.border = '3px solid #000';
+              document.getElementById('label-offline').style.color = '#cf4538';
+              document.getElementById('btn-next').style.opacity       = '1';
+              document.getElementById('btn-next').style.pointerEvents = 'auto';
+            }
+          }, 600);
+        };
+
+        tilesRow.appendChild(tile);
+      });
+
+      bar.appendChild(tilesRow);
     }
 
     // ── Replace btnNext listener with layer-aware dispatcher ──
@@ -1023,8 +1141,18 @@
         initLayer2();
       } else if (currentLayer === 2) {
         if (l2ActiveCard !== 'done') return;
-        console.log('Layer 2 complete — advancing to Layer 3');
-        // TODO: initLayer3();
+        currentLayer = 3;
+        l3ActiveCard = 'online';
+        l3SelectedRings = null;
+        document.getElementById('card-online').style.border  = '5px solid #ba8edb';
+        document.getElementById('card-offline').style.border = '3px solid #000';
+        document.getElementById('label-online').style.color  = '#ba8edb';
+        document.getElementById('label-offline').style.color = '#cf4538';
+        initLayer3();
+      } else if (currentLayer === 3) {
+        if (l3ActiveCard !== 'done') return;
+        console.log('Layer 3 complete — advancing to Layer 4');
+        // TODO: initLayer4();
       }
     });
   </script>
