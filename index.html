@@ -35,8 +35,9 @@
     .sc {
       position: relative;
       width: 1280px;
-      height: 747px;
+      height: 800px;
       margin: 0 auto;
+      overflow: visible;
     }
 
     /* ══════════════════════════════════════
@@ -134,13 +135,13 @@
       position: absolute;
       left: 52px;
       top: 24px;
-      width: 120px;
-      height: 85px;
+      width: 216px;
+      height: 153px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    .corner-eyes img { transform: rotate(-11.93deg); }
+    .corner-eyes img, .corner-eyes svg { transform: rotate(-11.93deg); }
 
     /* Column labels — IBM Plex Mono SemiBold 20px, red */
     /* Cards: 334+40+334=708px centered in 1280px → left offset=(1280-708)/2=286 */
@@ -199,7 +200,7 @@
       height: 269px;
       background: var(--orange);
       border-radius: 20px;
-      overflow: hidden;
+      overflow: visible;
     }
 
     /* Question text — IBM Plex Mono Medium 18px white */
@@ -307,6 +308,68 @@
     #btn-next:disabled { opacity: 0.4; cursor: not-allowed; }
     .js-tab { display: none; }
     #progress-current { display: none; }
+
+    /* ── Layer 6 tiles ── */
+    .l6-tile {
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      cursor: pointer;
+    }
+    .l6-tile:hover {
+      transform: rotate(1.5deg) scale(1.02);
+      box-shadow: 4px 4px 0 rgba(0,0,0,0.12);
+    }
+    .l6-tile:active {
+      transform: rotate(0.5deg) scale(0.97);
+      box-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+    }
+
+    /* ── Layer 7 swing animation ── */
+    @keyframes swingIn {
+      0%   { transform: rotate(0deg); }
+      40%  { transform: rotate(-12deg); }
+      65%  { transform: rotate(8deg); }
+      82%  { transform: rotate(-5deg); }
+      93%  { transform: rotate(3deg); }
+      100% { transform: rotate(-8deg); }
+    }
+    @keyframes swingInRight {
+      0%   { transform: rotate(0deg); }
+      40%  { transform: rotate(12deg); }
+      65%  { transform: rotate(-8deg); }
+      82%  { transform: rotate(5deg); }
+      93%  { transform: rotate(-3deg); }
+      100% { transform: rotate(8deg); }
+    }
+
+    /* ── Layer 4 slider ── */
+    .l4-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      flex: 1;
+      height: 5px;
+      background: rgba(255,255,255,0.45);
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+    .l4-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #ffffff;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.25);
+    }
+    .l4-slider::-moz-range-thumb {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #ffffff;
+      cursor: pointer;
+      border: none;
+    }
   </style>
 </head>
 <body>
@@ -323,7 +386,12 @@
       <div class="lc-line2">
         twin
         <span class="lc-eyes">
-          <img src="googly-eyes.svg" width="110" alt="" aria-hidden="true">
+          <svg class="googly-eyes-svg" data-rotation="0" width="198" viewBox="0 0 121 86" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M111.278 48.8309C108.32 55.8465 104.431 59.3608 101.791 61.3199C100.358 62.4779 94.856 64.9608 93.6234 65.6483C88.4657 67.6026 82.9392 67.8213 77.4917 67.0811C71.5788 65.8768 64.3118 63.6153 62.6434 58.0306C60.3275 50.2786 57.838 38.1723 60.5698 32.9749C62.1806 29.9105 63.7935 26.8824 66.0581 25.8355C70.9549 23.5717 75.8483 19.1021 81.5627 18.1443C86.9837 17.2356 93.0562 14.8989 98.6138 18.5278C103.974 22.028 110.228 25.0198 112.454 33.9273C113.757 39.1404 113.038 44.6557 111.278 48.8309Z" fill="white" stroke="black" stroke-width="3.84175" stroke-linecap="round"/>
+            <path d="M51.285 62.1264C47.9589 64.2178 44.2191 65.8571 42.7631 66.8281C41.0586 67.9649 39.8699 68.378 38.6913 68.7172C35.9008 69.2653 33.4505 69.4178 31.7674 69.2243C28.2333 68.3592 24.5623 67.7013 21.5556 66.0091C18.547 64.3159 13.878 62.1125 11.3809 57.731C9.59962 54.6054 7.01942 51.6976 6.89781 42.051C6.83659 37.1945 6.89872 30.6977 12.2036 27.2162C16.2694 24.5478 19.3288 22.079 22.8309 21.0053C26.1656 19.983 29.6151 17.2675 36.9955 18.2962C41.8936 18.9789 45.9185 20.006 48.7798 22.1997C51.6039 24.3648 55.2113 27.2325 57.2116 30.8574C59.1364 34.3452 60.5172 39.107 60.4477 43.9875C60.3956 47.6523 60.8279 51.7611 58.1033 54.6407C54.4168 58.5369 54.1954 60.2965 51.285 62.1264Z" fill="white" stroke="black" stroke-width="3.84175" stroke-linecap="round"/>
+            <circle class="pupil-left"  cx="42" cy="48" r="10" fill="black"/>
+            <circle class="pupil-right" cx="90" cy="47" r="10" fill="black"/>
+          </svg>
         </span>
       </div>
 
@@ -347,7 +415,12 @@
     <div class="sc">
 
       <div class="corner-eyes">
-        <img src="googly-eyes.svg" width="110" alt="" aria-hidden="true">
+        <svg class="googly-eyes-svg" data-rotation="-11.93" width="198" viewBox="0 0 121 86" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M111.278 48.8309C108.32 55.8465 104.431 59.3608 101.791 61.3199C100.358 62.4779 94.856 64.9608 93.6234 65.6483C88.4657 67.6026 82.9392 67.8213 77.4917 67.0811C71.5788 65.8768 64.3118 63.6153 62.6434 58.0306C60.3275 50.2786 57.838 38.1723 60.5698 32.9749C62.1806 29.9105 63.7935 26.8824 66.0581 25.8355C70.9549 23.5717 75.8483 19.1021 81.5627 18.1443C86.9837 17.2356 93.0562 14.8989 98.6138 18.5278C103.974 22.028 110.228 25.0198 112.454 33.9273C113.757 39.1404 113.038 44.6557 111.278 48.8309Z" fill="white" stroke="black" stroke-width="3.84175" stroke-linecap="round"/>
+          <path d="M51.285 62.1264C47.9589 64.2178 44.2191 65.8571 42.7631 66.8281C41.0586 67.9649 39.8699 68.378 38.6913 68.7172C35.9008 69.2653 33.4505 69.4178 31.7674 69.2243C28.2333 68.3592 24.5623 67.7013 21.5556 66.0091C18.547 64.3159 13.878 62.1125 11.3809 57.731C9.59962 54.6054 7.01942 51.6976 6.89781 42.051C6.83659 37.1945 6.89872 30.6977 12.2036 27.2162C16.2694 24.5478 19.3288 22.079 22.8309 21.0053C26.1656 19.983 29.6151 17.2675 36.9955 18.2962C41.8936 18.9789 45.9185 20.006 48.7798 22.1997C51.6039 24.3648 55.2113 27.2325 57.2116 30.8574C59.1364 34.3452 60.5172 39.107 60.4477 43.9875C60.3956 47.6523 60.8279 51.7611 58.1033 54.6407C54.4168 58.5369 54.1954 60.2965 51.285 62.1264Z" fill="white" stroke="black" stroke-width="3.84175" stroke-linecap="round"/>
+          <circle class="pupil-left"  cx="42" cy="48" r="10" fill="black"/>
+          <circle class="pupil-right" cx="90" cy="47" r="10" fill="black"/>
+        </svg>
       </div>
 
       <p class="col-label col-label-online">Online</p>
@@ -379,7 +452,12 @@
     <div class="sc">
 
       <div class="corner-eyes">
-        <img src="googly-eyes.svg" width="110" alt="" aria-hidden="true">
+        <svg class="googly-eyes-svg" data-rotation="-11.93" width="198" viewBox="0 0 121 86" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M111.278 48.8309C108.32 55.8465 104.431 59.3608 101.791 61.3199C100.358 62.4779 94.856 64.9608 93.6234 65.6483C88.4657 67.6026 82.9392 67.8213 77.4917 67.0811C71.5788 65.8768 64.3118 63.6153 62.6434 58.0306C60.3275 50.2786 57.838 38.1723 60.5698 32.9749C62.1806 29.9105 63.7935 26.8824 66.0581 25.8355C70.9549 23.5717 75.8483 19.1021 81.5627 18.1443C86.9837 17.2356 93.0562 14.8989 98.6138 18.5278C103.974 22.028 110.228 25.0198 112.454 33.9273C113.757 39.1404 113.038 44.6557 111.278 48.8309Z" fill="white" stroke="black" stroke-width="3.84175" stroke-linecap="round"/>
+          <path d="M51.285 62.1264C47.9589 64.2178 44.2191 65.8571 42.7631 66.8281C41.0586 67.9649 39.8699 68.378 38.6913 68.7172C35.9008 69.2653 33.4505 69.4178 31.7674 69.2243C28.2333 68.3592 24.5623 67.7013 21.5556 66.0091C18.547 64.3159 13.878 62.1125 11.3809 57.731C9.59962 54.6054 7.01942 51.6976 6.89781 42.051C6.83659 37.1945 6.89872 30.6977 12.2036 27.2162C16.2694 24.5478 19.3288 22.079 22.8309 21.0053C26.1656 19.983 29.6151 17.2675 36.9955 18.2962C41.8936 18.9789 45.9185 20.006 48.7798 22.1997C51.6039 24.3648 55.2113 27.2325 57.2116 30.8574C59.1364 34.3452 60.5172 39.107 60.4477 43.9875C60.3956 47.6523 60.8279 51.7611 58.1033 54.6407C54.4168 58.5369 54.1954 60.2965 51.285 62.1264Z" fill="white" stroke="black" stroke-width="3.84175" stroke-linecap="round"/>
+          <circle class="pupil-left"  cx="42" cy="48" r="10" fill="black"/>
+          <circle class="pupil-right" cx="90" cy="47" r="10" fill="black"/>
+        </svg>
       </div>
 
       <p class="col-label col-label-online" id="label-online">Online</p>
@@ -782,6 +860,8 @@
     // ── Layer 3 state ──────────────────────────────────
     let l3SelectedRings = null;
     let l3ActiveCard    = 'online';
+    let l3OnlineRings   = null;
+    let l3OfflineRings  = null;
 
     const L2_TILES = [
       { key:'square', file:'openness-square.svg', label:'I am pretty guarded'           },
@@ -824,7 +904,6 @@
         svg.style.cssText = 'width:100%;height:100%;';
         wrapper.appendChild(svg);
         card.style.position = 'relative';
-        card.style.overflow = 'hidden';
         card.appendChild(wrapper);
       } catch(e) {
         console.error('Could not load SVG:', shapeKey, e);
@@ -884,7 +963,7 @@
 
       const bar = document.getElementById('options-bar');
       bar.innerHTML = '';
-      bar.style.cssText = 'background:#f16f33;border-radius:20px;padding:20px 24px;width:708px;box-sizing:border-box;display:flex;flex-direction:column;gap:16px;';
+      bar.style.cssText = 'background:#f16f33;border-radius:20px;padding:20px 24px 24px 24px;width:708px;min-height:269px;height:auto;box-sizing:border-box;display:flex;flex-direction:column;gap:12px;overflow:visible;';
 
       // Question text
       const q = document.createElement('p');
@@ -1002,9 +1081,7 @@
       const existing = card.querySelector('.layer3-rings');
       if (existing) existing.remove();
 
-      // Fix 1: clip rings inside card boundary
       card.style.position = 'relative';
-      card.style.overflow = 'hidden';
 
       // Fix 3: hide empty card-canvas SVG — it renders a browser placeholder cross
       const canvas = card.querySelector('.card-canvas');
@@ -1070,7 +1147,7 @@
     function initLayer3() {
       const bar = document.getElementById('options-bar');
       bar.innerHTML = '';
-      bar.style.cssText = 'background:#f16f33;border-radius:20px;padding:20px 24px;width:708px;box-sizing:border-box;display:flex;flex-direction:column;gap:16px;';
+      bar.style.cssText = 'background:#f16f33;border-radius:20px;padding:20px 24px 24px 24px;width:708px;min-height:269px;height:auto;box-sizing:border-box;display:flex;flex-direction:column;gap:12px;overflow:visible;';
 
       const q = document.createElement('p');
       q.textContent = '3. how connected do you feel to the people around you?';
@@ -1105,6 +1182,8 @@
           document.querySelectorAll('.l3-tile').forEach(t => t.style.background = 'rgba(255,255,255,0.15)');
           tile.style.background = 'rgba(255,255,255,0.35)';
           l3SelectedRings = opt.rings;
+          if (l3ActiveCard === 'online') { l3OnlineRings  = opt.rings; }
+          else                           { l3OfflineRings = opt.rings; }
           renderConnectionInCard(l3ActiveCard === 'online' ? 'card-online' : 'card-offline', opt.rings);
           setTimeout(() => {
             if (l3ActiveCard === 'online') {
@@ -1151,10 +1230,639 @@
         initLayer3();
       } else if (currentLayer === 3) {
         if (l3ActiveCard !== 'done') return;
-        console.log('Layer 3 complete — advancing to Layer 4');
-        // TODO: initLayer4();
+        currentLayer = 4;
+        l4ActiveCard = 'online';
+        document.getElementById('card-online').style.border  = '5px solid #ba8edb';
+        document.getElementById('card-offline').style.border = '3px solid #000';
+        document.getElementById('label-online').style.color  = '#ba8edb';
+        document.getElementById('label-offline').style.color = '#cf4538';
+        initLayer4();
+      } else if (currentLayer === 4) {
+        if (l4ActiveCard !== 'done') return;
+        currentLayer = 5;
+        l5ActiveCard = 'online';
+        document.getElementById('card-online').style.border  = '5px solid #ba8edb';
+        document.getElementById('card-offline').style.border = '3px solid #000';
+        document.getElementById('label-online').style.color  = '#ba8edb';
+        document.getElementById('label-offline').style.color = '#cf4538';
+        initLayer5();
+      } else if (currentLayer === 5) {
+        if (l5ActiveCard !== 'done') return;
+        currentLayer = 6;
+        l6Answer = null;
+        initLayer6();
+      } else if (currentLayer === 6) {
+        if (!l6Answer) return;
+        currentLayer = 7;
+        document.querySelector('.sc').style.overflow = '';
+        initLayer7();
       }
     });
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════
+       LAYER 4 — Conflict Response / Clarity
+  ═══════════════════════════════════════════════════ -->
+  <script>
+    // ── Layer 4 state ──────────────────────────────────
+    let l4ActiveCard   = 'online';
+    let l4OnlineStyle  = null;
+    let l4OfflineStyle = null;
+
+    // Extend updateNextButton to handle Layer 4
+    updateNextButton = (function(prev) {
+      return function() {
+        if (currentLayer === 4) {
+          const btn  = document.getElementById('btn-next');
+          const done = l4ActiveCard === 'done';
+          btn.style.opacity       = done ? '1'    : '0.4';
+          btn.style.pointerEvents = done ? 'auto' : 'none';
+        } else {
+          prev();
+        }
+      };
+    })(updateNextButton);
+
+    async function renderConflictMarkInCard(cardId, styleKey) {
+      const card = document.getElementById(cardId);
+      const old = card.querySelector('.layer4-mark');
+      if (old) old.remove();
+
+      const files = {
+        scribble: 'assets/textures/conflict-scribble.svg',
+        lines:    'assets/textures/conflict-lines.svg',
+        dots:     'assets/textures/conflict-dots.svg'
+      };
+
+      // Calculate innermost ring position mathematically
+      const rings = cardId === 'card-online' ? l3OnlineRings : l3OfflineRings;
+      const ringSizes = { 3: 22, 2: 26, 1: 36 };
+      const pct = ringSizes[rings] || 22;
+      const cardW = 334, cardH = 334;
+      const w    = cardW * pct / 100 * 0.75;
+      const h    = cardH * pct / 100 * 0.75;
+      const top  = cardH * 0.42 - h / 2;
+      const left = cardW * 0.50 - w / 2;
+
+      const response = await fetch(files[styleKey]);
+      const svgText  = await response.text();
+      const parser   = new DOMParser();
+      const doc      = parser.parseFromString(svgText, 'image/svg+xml');
+      const svg      = doc.querySelector('svg');
+      svg.style.cssText = 'width:100%;height:100%;display:block;';
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'layer4-mark';
+      wrapper.style.cssText = `position:absolute;top:${top}px;left:${left}px;width:${w}px;height:${h}px;overflow:hidden;pointer-events:none;z-index:5;`;
+      wrapper.appendChild(svg);
+      card.appendChild(wrapper);
+    }
+
+    function initLayer4() {
+      const bar = document.getElementById('options-bar');
+      bar.innerHTML = '';
+      bar.style.cssText = 'background:#f16f33;border-radius:20px;padding:20px 24px 24px 24px;width:708px;min-height:269px;height:auto;box-sizing:border-box;display:flex;flex-direction:column;gap:12px;overflow:visible;';
+
+      const q = document.createElement('p');
+      q.textContent = "4. when something needs to be said but it's complicated — how do you handle it, and how much of you comes through?";
+      q.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:16px;color:#ffffff;margin:0;line-height:1.4;';
+      bar.appendChild(q);
+
+      const tilesRow = document.createElement('div');
+      tilesRow.style.cssText = 'display:flex;flex-direction:row;gap:20px;justify-content:center;align-items:flex-start;width:100%;';
+
+      const options = [
+        { key:'scribble', file:'assets/textures/conflict-scribble.svg', label:'I have a lot to say and most of it comes out' },
+        { key:'lines',    file:'assets/textures/conflict-lines.svg',    label:'I say it clearly, once' },
+        { key:'dots',     file:'assets/textures/conflict-dots.svg',     label:'I go quiet until I know what I actually think' }
+      ];
+
+      let selectedKey = null;
+
+      const confirmBtn = document.createElement('button');
+      confirmBtn.textContent = "that's me →";
+      confirmBtn.style.cssText = 'align-self:center;padding:10px 28px;background:#fff;border:2px solid #000;border-radius:20px;font-family:"IBM Plex Mono",monospace;font-size:14px;font-weight:600;color:#000;cursor:pointer;visibility:hidden;opacity:0;margin-top:4px;margin-bottom:4px;';
+
+      options.forEach(opt => {
+        const tile = document.createElement('div');
+        tile.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;flex:1;max-width:180px;background:rgba(255,255,255,0.15);border-radius:12px;padding:16px 12px;';
+
+        const img = document.createElement('img');
+        img.src = opt.file;
+        img.style.cssText = 'width:60px;height:60px;object-fit:contain;';
+
+        const lbl = document.createElement('span');
+        lbl.textContent = opt.label;
+        lbl.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:11px;color:#fff5e6;text-align:center;line-height:1.4;';
+
+        tile.appendChild(img);
+        tile.appendChild(lbl);
+
+        tile.onclick = function() {
+          tilesRow.querySelectorAll('div').forEach(t => t.style.background = 'rgba(255,255,255,0.15)');
+          tile.style.background = 'rgba(255,255,255,0.35)';
+          selectedKey = opt.key;
+          const cardId = l4ActiveCard === 'online' ? 'card-online' : 'card-offline';
+          renderConflictMarkInCard(cardId, opt.key);
+          confirmBtn.style.visibility = 'visible';
+          confirmBtn.style.opacity = '1';
+        };
+
+        tilesRow.appendChild(tile);
+      });
+
+      bar.appendChild(tilesRow);
+
+      confirmBtn.onclick = function() {
+        if (!selectedKey) return;
+        if (l4ActiveCard === 'online') {
+          l4OnlineStyle = selectedKey;
+          l4ActiveCard  = 'offline';
+          document.getElementById('card-online').style.border  = '3px solid #000';
+          document.getElementById('card-offline').style.border = '5px solid #ba8edb';
+          document.getElementById('label-online').style.color  = '#cf4538';
+          document.getElementById('label-offline').style.color = '#ba8edb';
+          selectedKey = null;
+          tilesRow.querySelectorAll('div').forEach(t => t.style.background = 'rgba(255,255,255,0.15)');
+          confirmBtn.style.visibility = 'hidden';
+          confirmBtn.style.opacity = '0';
+          updateNextButton();
+        } else if (l4ActiveCard === 'offline') {
+          l4OfflineStyle = selectedKey;
+          l4ActiveCard   = 'done';
+          document.getElementById('card-offline').style.border = '3px solid #000';
+          document.getElementById('label-offline').style.color = '#cf4538';
+          confirmBtn.style.visibility = 'hidden';
+          confirmBtn.style.opacity = '0';
+          updateNextButton();
+        }
+      };
+
+      bar.appendChild(confirmBtn);
+    }
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════
+       LAYER 6 — The Meetup
+  ═══════════════════════════════════════════════════ -->
+  <script>
+    // ── Layer 6 state ──────────────────────────────────
+    let l6Answer = null;
+
+    // Extend updateNextButton to handle Layer 6
+    updateNextButton = (function(prev) {
+      return function() {
+        if (currentLayer === 6) {
+          const btn  = document.getElementById('btn-next');
+          const done = l6Answer !== null;
+          btn.style.opacity       = done ? '1'    : '0.4';
+          btn.style.pointerEvents = done ? 'auto' : 'none';
+        } else {
+          prev();
+        }
+      };
+    })(updateNextButton);
+
+    function initLayer6() {
+      // Hide cards, labels, corner eyes
+      document.getElementById('card-online').style.display   = 'none';
+      document.getElementById('card-offline').style.display  = 'none';
+      document.querySelector('.cards-row').style.display     = 'none';
+      document.getElementById('label-online').style.display  = 'none';
+      document.getElementById('label-offline').style.display = 'none';
+      document.querySelector('.corner-eyes').style.display   = 'none';
+
+      const bar = document.getElementById('options-bar');
+      bar.innerHTML = '';
+      bar.style.cssText = 'position:absolute;left:286px;top:40px;width:708px;background:transparent;padding:0;box-sizing:border-box;display:flex;flex-direction:column;gap:16px;';
+      document.querySelector('.sc').style.overflow = 'visible';
+
+      // Question box
+      const qBox = document.createElement('div');
+      qBox.style.cssText = 'background:#f16f33;border-radius:20px;padding:24px 28px;width:100%;box-sizing:border-box;';
+      qBox.innerHTML = '<p style="font-family:\'IBM Plex Mono\',monospace;font-size:16px;color:#fff;margin:0;line-height:1.5;">someone who only knows you online meets you IRL. they say you\'re "different than expected." you take that as:</p>';
+      bar.appendChild(qBox);
+
+      // 2×2 grid
+      const grid = document.createElement('div');
+      grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;';
+
+      const options = [
+        { key:'compliment',    text:'a compliment — there\'s more to you offline' },
+        { key:'reality',       text:'a reality check — you\'re more curated than you thought' },
+        { key:'neutral',       text:'neutral — of course, a screen isn\'t a person' },
+        { key:'uncomfortable', text:'uncomfortable — both versions should feel like you' }
+      ];
+
+      function playSelectSound() {
+        try {
+          const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+          const osc  = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(560, ctx.currentTime + 0.06);
+          osc.frequency.exponentialRampToValueAtTime(480, ctx.currentTime + 0.12);
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+          osc.start(ctx.currentTime);
+          osc.stop(ctx.currentTime + 0.18);
+        } catch(e) {}
+      }
+
+      options.forEach((opt, i) => {
+        const tile = document.createElement('div');
+        tile.className = 'l6-tile';
+        tile.style.cssText = 'background:#e8956d;border-radius:16px;padding:18px 20px;cursor:pointer;border:3px solid transparent;box-sizing:border-box;opacity:0;transform:translateY(16px);';
+        tile.innerHTML = `<p style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:#7a3b1e;margin:0;line-height:1.5;">• ${opt.text}</p>`;
+
+        tile.onclick = function() {
+          document.querySelectorAll('.l6-tile').forEach(t => t.style.border = '3px solid transparent');
+          tile.style.border = '3px solid #ba8edb';
+          l6Answer = opt.key;
+          playSelectSound();
+          updateNextButton();
+        };
+
+        // Staggered fade-in
+        setTimeout(() => {
+          tile.style.transition = 'opacity 0.3s ease, transform 0.3s ease, border 0.15s ease, box-shadow 0.15s ease';
+          tile.style.opacity    = '1';
+          tile.style.transform  = 'translateY(0)';
+        }, 100 + i * 80);
+
+        grid.appendChild(tile);
+      });
+
+      bar.appendChild(grid);
+
+      // Hover tilt styles
+      if (!document.getElementById('l6-style')) {
+        const st = document.createElement('style');
+        st.id = 'l6-style';
+        st.textContent = `
+          .l6-tile { transition: transform 0.15s ease, box-shadow 0.15s ease; cursor: pointer; }
+          .l6-tile:hover { transform: rotate(1.8deg) scale(1.02) !important; box-shadow: 5px 5px 0 rgba(0,0,0,0.12); }
+          .l6-tile:active { transform: rotate(0.5deg) scale(0.97) !important; }
+        `;
+        document.head.appendChild(st);
+      }
+
+      updateNextButton();
+    }
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════
+       LAYER 5 — Vibe / Aura
+  ═══════════════════════════════════════════════════ -->
+  <script>
+    // ── Layer 5 state ──────────────────────────────────
+    let l5ActiveCard  = 'online';
+    let l5OnlineVibe  = null;
+    let l5OfflineVibe = null;
+
+    // Extend updateNextButton to handle Layer 5
+    updateNextButton = (function(prev) {
+      return function() {
+        if (currentLayer === 5) {
+          const btn  = document.getElementById('btn-next');
+          const done = l5ActiveCard === 'done';
+          btn.style.opacity       = done ? '1'    : '0.4';
+          btn.style.pointerEvents = done ? 'auto' : 'none';
+        } else {
+          prev();
+        }
+      };
+    })(updateNextButton);
+
+    async function renderVibeOnCard(cardId, vibeKey) {
+      const card = document.getElementById(cardId);
+      const old = card.querySelector('.layer5-vibe');
+      if (old) old.remove();
+
+      const files = {
+        scribbly:  'assets/vibe-scribbly.svg',
+        lightning: 'assets/vibe-lightning.svg',
+        star:      'assets/vibe-star.svg',
+        clover:    'assets/vibe-clover.svg'
+      };
+
+      const response = await fetch(files[vibeKey]);
+      const svgText  = await response.text();
+      const parser   = new DOMParser();
+      const doc      = parser.parseFromString(svgText, 'image/svg+xml');
+      const svg      = doc.querySelector('svg');
+      svg.style.cssText = 'width:100%;height:100%;display:block;';
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'layer5-vibe';
+      wrapper.style.cssText = 'position:absolute;top:5px;right:5px;width:117px;height:117px;pointer-events:none;z-index:10;';
+      wrapper.appendChild(svg);
+      card.appendChild(wrapper);
+    }
+
+    function initLayer5() {
+      const bar = document.getElementById('options-bar');
+      bar.innerHTML = '';
+      bar.style.cssText = 'background:#f16f33;border-radius:20px;padding:20px 24px 24px 24px;width:708px;min-height:269px;height:auto;box-sizing:border-box;display:flex;flex-direction:column;gap:16px;overflow:visible;';
+
+      const q = document.createElement('p');
+      q.textContent = '5. pick a vibe — how do you think people describe you?';
+      q.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:16px;color:#ffffff;margin:0;line-height:1.4;';
+      bar.appendChild(q);
+
+      const tilesRow = document.createElement('div');
+      tilesRow.style.cssText = 'display:flex;flex-direction:row;justify-content:space-evenly;align-items:center;width:100%;padding:8px 0;';
+
+      const options = [
+        { key:'scribbly',  file:'assets/vibe-scribbly.svg'  },
+        { key:'lightning', file:'assets/vibe-lightning.svg' },
+        { key:'star',      file:'assets/vibe-star.svg'      },
+        { key:'clover',    file:'assets/vibe-clover.svg'    }
+      ];
+
+      let selectedKey = null;
+
+      const confirmBtn = document.createElement('button');
+      confirmBtn.textContent = "that's my vibe →";
+      confirmBtn.style.cssText = 'align-self:center;padding:10px 28px;background:#fff;border:2px solid #000;border-radius:20px;font-family:"IBM Plex Mono",monospace;font-size:14px;font-weight:600;color:#000;cursor:pointer;visibility:hidden;opacity:0;margin-top:4px;';
+
+      options.forEach(opt => {
+        const tile = document.createElement('div');
+        tile.style.cssText = 'width:90px;height:90px;cursor:pointer;opacity:0.75;transition:opacity 0.15s,transform 0.15s;display:flex;align-items:center;justify-content:center;';
+
+        const img = document.createElement('img');
+        img.src = opt.file;
+        img.style.cssText = 'width:80px;height:80px;object-fit:contain;';
+
+        tile.appendChild(img);
+
+        tile.onclick = function() {
+          tilesRow.querySelectorAll('div').forEach(t => {
+            t.style.opacity   = '0.7';
+            t.style.transform = 'scale(1)';
+          });
+          tile.style.opacity   = '1';
+          tile.style.transform = 'scale(1.15)';
+          selectedKey = opt.key;
+          const cardId = l5ActiveCard === 'online' ? 'card-online' : 'card-offline';
+          renderVibeOnCard(cardId, opt.key);
+          confirmBtn.style.visibility = 'visible';
+          confirmBtn.style.opacity    = '1';
+        };
+
+        tilesRow.appendChild(tile);
+      });
+
+      bar.appendChild(tilesRow);
+
+      confirmBtn.onclick = function() {
+        if (!selectedKey) return;
+        if (l5ActiveCard === 'online') {
+          l5OnlineVibe = selectedKey;
+          l5ActiveCard = 'offline';
+          document.getElementById('card-online').style.border  = '3px solid #000';
+          document.getElementById('card-offline').style.border = '5px solid #ba8edb';
+          document.getElementById('label-online').style.color  = '#cf4538';
+          document.getElementById('label-offline').style.color = '#ba8edb';
+          selectedKey = null;
+          tilesRow.querySelectorAll('div').forEach(t => {
+            t.style.opacity   = '0.7';
+            t.style.transform = 'scale(1)';
+          });
+          confirmBtn.style.visibility = 'hidden';
+          confirmBtn.style.opacity    = '0';
+          updateNextButton();
+        } else if (l5ActiveCard === 'offline') {
+          l5OfflineVibe = selectedKey;
+          l5ActiveCard  = 'done';
+          document.getElementById('card-offline').style.border = '3px solid #000';
+          document.getElementById('label-offline').style.color = '#cf4538';
+          confirmBtn.style.visibility = 'hidden';
+          confirmBtn.style.opacity    = '0';
+          updateNextButton();
+        }
+      };
+
+      bar.appendChild(confirmBtn);
+    }
+  </script>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       GOOGLY EYES — Pupil tracking + blinking
+  ═══════════════════════════════════════════════════ -->
+  <script>
+    // ── Pupil tracking ─────────────────────────────────
+    (function() {
+      function movePupil(svgEl, pupil, eyeCx, eyeCy, maxDist, e) {
+        const rect   = svgEl.getBoundingClientRect();
+        const scaleX = rect.width  / svgEl.viewBox.baseVal.width;
+        const scaleY = rect.height / svgEl.viewBox.baseVal.height;
+        const mx = (e.clientX - rect.left) / scaleX;
+        const my = (e.clientY - rect.top)  / scaleY;
+        const dx = mx - eyeCx;
+        const dy = my - eyeCy;
+        const dist  = Math.sqrt(dx * dx + dy * dy);
+        const d     = Math.min(dist, maxDist);
+        const angle = Math.atan2(dy, dx);
+        pupil.setAttribute('cx', eyeCx + Math.cos(angle) * d);
+        pupil.setAttribute('cy', eyeCy + Math.sin(angle) * d);
+      }
+
+      function trackEyes(e) {
+        document.querySelectorAll('.googly-eyes-svg').forEach(svgEl => {
+          const leftPupil  = svgEl.querySelector('.pupil-left');
+          const rightPupil = svgEl.querySelector('.pupil-right');
+          if (!leftPupil || !rightPupil) return;
+          movePupil(svgEl, leftPupil,  33, 44, 8, e);
+          movePupil(svgEl, rightPupil, 87, 41, 8, e);
+        });
+      }
+
+      document.addEventListener('mousemove', trackEyes);
+    })();
+
+    // ── Blinking ───────────────────────────────────────
+    (function blink() {
+      function doBlinkOnce() {
+        document.querySelectorAll('.googly-eyes-svg').forEach(svgEl => {
+          const rot    = svgEl.dataset.rotation || '0';
+          const prefix = rot !== '0' ? `rotate(${rot}deg) ` : '';
+          svgEl.style.transition = 'transform 0.08s ease-in';
+          svgEl.style.transform  = `${prefix}scaleY(0.1)`;
+          setTimeout(() => {
+            svgEl.style.transform = `${prefix}scaleY(1)`;
+            setTimeout(() => {
+              svgEl.style.transition = '';
+              svgEl.style.transform  = '';
+            }, 100);
+          }, 80);
+        });
+      }
+
+      function scheduleNextBlink() {
+        const delay = 3000 + Math.random() * 3000;
+        setTimeout(() => {
+          doBlinkOnce();
+          if (Math.random() > 0.6) {
+            setTimeout(doBlinkOnce, 250);
+          }
+          scheduleNextBlink();
+        }, delay);
+      }
+
+      scheduleNextBlink();
+    })();
+  </script>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 4 — LAYER 7: The Final Question
+  ══════════════════════════════════════ -->
+  <div id="screen-layer7" class="screen">
+    <div class="sc">
+
+      <div class="corner-eyes">
+        <svg class="googly-eyes-svg" data-rotation="-11.93" width="198" viewBox="0 0 121 86" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M111.278 48.8309C108.32 55.8465 104.431 59.3608 101.791 61.3199C100.358 62.4779 94.856 64.9608 93.6234 65.6483C88.4657 67.6026 82.9392 67.8213 77.4917 67.0811C71.5788 65.8768 64.3118 63.6153 62.6434 58.0306C60.3275 50.2786 57.838 38.1723 60.5698 32.9749C62.1806 29.9105 63.7935 26.8824 66.0581 25.8355C70.9549 23.5717 75.8483 19.1021 81.5627 18.1443C86.9837 17.2356 93.0562 14.8989 98.6138 18.5278C103.974 22.028 110.228 25.0198 112.454 33.9273C113.757 39.1404 113.038 44.6557 111.278 48.8309Z" fill="white" stroke="black" stroke-width="3.84175" stroke-linecap="round"/>
+          <path d="M51.285 62.1264C47.9589 64.2178 44.2191 65.8571 42.7631 66.8281C41.0586 67.9649 39.8699 68.378 38.6913 68.7172C35.9008 69.2653 33.4505 69.4178 31.7674 69.2243C28.2333 68.3592 24.5623 67.7013 21.5556 66.0091C18.547 64.3159 13.878 62.1125 11.3809 57.731C9.59962 54.6054 7.01942 51.6976 6.89781 42.051C6.83659 37.1945 6.89872 30.6977 12.2036 27.2162C16.2694 24.5478 19.3288 22.079 22.8309 21.0053C26.1656 19.983 29.6151 17.2675 36.9955 18.2962C41.8936 18.9789 45.9185 20.006 48.7798 22.1997C51.6039 24.3648 55.2113 27.2325 57.2116 30.8574C59.1364 34.3452 60.5172 39.107 60.4477 43.9875C60.3956 47.6523 60.8279 51.7611 58.1033 54.6407C54.4168 58.5369 54.1954 60.2965 51.285 62.1264Z" fill="white" stroke="black" stroke-width="3.84175" stroke-linecap="round"/>
+          <circle class="pupil-left"  cx="42" cy="48" r="10" fill="black"/>
+          <circle class="pupil-right" cx="90" cy="47" r="10" fill="black"/>
+        </svg>
+      </div>
+
+      <!-- Question box -->
+      <div style="position:absolute;left:286px;top:24px;width:708px;background:#f16f33;border-radius:20px;padding:20px 28px;box-sizing:border-box;">
+        <p style="font-family:'IBM Plex Mono',monospace;font-size:16px;color:#fff;margin:0;line-height:1.5;">7. look at both cards. which version would someone who really loves you recognize?</p>
+      </div>
+
+      <!-- Labels -->
+      <p style="position:absolute;left:286px;top:178px;font-size:20px;font-weight:600;color:#cf4538;font-family:'IBM Plex Mono',monospace;">Online</p>
+      <p style="position:absolute;left:780px;top:178px;font-size:20px;font-weight:600;color:#cf4538;font-family:'IBM Plex Mono',monospace;">Offline</p>
+
+      <!-- Online card -->
+      <div id="l7-card-online" style="position:absolute;top:210px;left:286px;width:334px;height:334px;background:#fff;border-radius:24px;border:3px solid #000;cursor:pointer;overflow:visible;z-index:5;">
+        <div style="position:absolute;top:14px;right:14px;width:22px;height:22px;border-radius:50%;background:#f8f0dd;border:3px solid #000;z-index:10;pointer-events:none;"></div>
+      </div>
+
+      <!-- Offline card -->
+      <div id="l7-card-offline" style="position:absolute;top:210px;left:660px;width:334px;height:334px;background:#fff;border-radius:24px;border:3px solid #000;cursor:pointer;overflow:visible;z-index:5;">
+        <div style="position:absolute;top:14px;left:14px;width:22px;height:22px;border-radius:50%;background:#f8f0dd;border:3px solid #000;z-index:10;pointer-events:none;"></div>
+      </div>
+
+      <!-- Keyring between cards -->
+      <div style="position:absolute;top:178px;left:640px;transform:translateX(-50%);width:68px;height:68px;z-index:15;pointer-events:none;">
+        <svg viewBox="0 0 68 68" xmlns="http://www.w3.org/2000/svg" style="width:68px;height:68px;">
+          <circle cx="34" cy="34" r="30" fill="none" stroke="#000" stroke-width="9"/>
+          <circle cx="34" cy="34" r="20" fill="#f8f0dd"/>
+        </svg>
+      </div>
+
+      <button class="nav-back" onclick="showScreen('screen-question')">←</button>
+      <button class="nav-next" id="l7-btn-next" style="opacity:0.4;pointer-events:none;" onclick="finishPortrait()">→</button>
+
+    </div>
+  </div>
+
+  <script>
+    let l7ChosenCard = null;
+
+    function initLayer7() {
+      // Copy all visual layers from original cards into l7 cards
+      function copyCard(fromId, toId) {
+        const from = document.getElementById(fromId);
+        const to   = document.getElementById(toId);
+        // Keep only first child (punch hole), remove rest
+        while (to.children.length > 1) to.removeChild(to.lastChild);
+        // Clone all children from original card
+        Array.from(from.children).forEach(child => {
+          to.appendChild(child.cloneNode(true));
+        });
+      }
+      copyCard('card-online',  'l7-card-online');
+      copyCard('card-offline', 'l7-card-offline');
+
+      // Reset state
+      l7ChosenCard = null;
+      document.getElementById('l7-btn-next').style.opacity      = '0.4';
+      document.getElementById('l7-btn-next').style.pointerEvents = 'none';
+      document.querySelectorAll('.l7-eyes').forEach(e => e.remove());
+
+      // Switch to layer 7 screen
+      showScreen('screen-layer7');
+
+      // Swing animation via CSS keyframes
+      const c1 = document.getElementById('l7-card-online');
+      const c2 = document.getElementById('l7-card-offline');
+      c1.style.transformOrigin = 'top right';
+      c2.style.transformOrigin = 'top left';
+      c1.style.animation = 'swingIn 1s cubic-bezier(0.25,0.46,0.45,0.94) forwards';
+      c2.style.animation = 'swingInRight 1s cubic-bezier(0.25,0.46,0.45,0.94) forwards';
+
+      // Click handlers
+      [c1, c2].forEach(card => {
+        card.onclick = function() {
+          l7ChosenCard = card.id;
+          document.querySelectorAll('.l7-eyes').forEach(e => e.remove());
+
+          // Bounce animation
+          const base = card.id === 'l7-card-online' ? -8 : 8;
+          card.style.animation = 'none';
+          card.style.transition = 'transform 0.2s cubic-bezier(0.34,1.56,0.64,1)';
+          card.style.transform  = `rotate(${base}deg) scale(1.06)`;
+          setTimeout(() => {
+            card.style.transform = `rotate(${base}deg) scale(1)`;
+            setTimeout(() => { card.style.transition = ''; }, 200);
+          }, 200);
+
+          // Place googly eyes on top edge — inline SVG with trackable circle pupils
+          const w = document.createElement('div');
+          w.className = 'l7-eyes';
+          w.style.cssText = 'position:absolute;top:-30px;left:50%;transform:translateX(-50%);width:160px;height:80px;pointer-events:none;z-index:20;';
+          w.innerHTML = `<svg class="googly-eyes-svg" data-rotation="0" viewBox="0 0 121 86" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+            <path d="M111.278 48.8309C108.32 55.8465 104.431 59.3608 101.791 61.3199C100.358 62.4779 94.856 64.9608 93.6234 65.6483C88.4657 67.6026 82.9392 67.8213 77.4917 67.0811C71.5788 65.8768 64.3118 63.6153 62.6434 58.0306C60.3275 50.2786 57.838 38.1723 60.5698 32.9749C62.1806 29.9105 63.7935 26.8824 66.0581 25.8355C70.9549 23.5717 75.8483 19.1021 81.5627 18.1443C86.9837 17.2356 93.0562 14.8989 98.6138 18.5278C103.974 22.028 110.228 25.0198 112.454 33.9273C113.757 39.1404 113.038 44.6557 111.278 48.8309Z" fill="white" stroke="black" stroke-width="3.84175" stroke-linecap="round"/>
+            <path d="M51.285 62.1264C47.9589 64.2178 44.2191 65.8571 42.7631 66.8281C41.0586 67.9649 39.8699 68.378 38.6913 68.7172C35.9008 69.2653 33.4505 69.4178 31.7674 69.2243C28.2333 68.3592 24.5623 67.7013 21.5556 66.0091C18.547 64.3159 13.878 62.1125 11.3809 57.731C9.59962 54.6054 7.01942 51.6976 6.89781 42.051C6.83659 37.1945 6.89872 30.6977 12.2036 27.2162C16.2694 24.5478 19.3288 22.079 22.8309 21.0053C26.1656 19.983 29.6151 17.2675 36.9955 18.2962C41.8936 18.9789 45.9185 20.006 48.7798 22.1997C51.6039 24.3648 55.2113 27.2325 57.2116 30.8574C59.1364 34.3452 60.5172 39.107 60.4477 43.9875C60.3956 47.6523 60.8279 51.7611 58.1033 54.6407C54.4168 58.5369 54.1954 60.2965 51.285 62.1264Z" fill="white" stroke="black" stroke-width="3.84175" stroke-linecap="round"/>
+            <circle class="pupil-left"  cx="42" cy="48" r="10" fill="black"/>
+            <circle class="pupil-right" cx="90" cy="47" r="10" fill="black"/>
+          </svg>`;
+          card.appendChild(w);
+
+          // Remove existing acknowledgement
+          document.querySelectorAll('.l7-ack').forEach(e => e.remove());
+
+          // Add "there you are." below the chosen card
+          const ack = document.createElement('p');
+          ack.className = 'l7-ack';
+          ack.textContent = 'there you are.';
+          ack.style.cssText = `
+            position:absolute;
+            bottom:-40px;
+            left:50%;
+            transform:translateX(-50%);
+            font-family:'Nanum Pen Script',cursive;
+            font-size:32px;
+            color:#000;
+            white-space:nowrap;
+            opacity:0;
+            transition:opacity 0.6s ease 0.3s;
+            pointer-events:none;
+          `;
+          card.appendChild(ack);
+          setTimeout(() => { ack.style.opacity = '1'; }, 100);
+
+          // Enable next button
+          document.getElementById('l7-btn-next').style.opacity      = '1';
+          document.getElementById('l7-btn-next').style.pointerEvents = 'auto';
+        };
+      });
+    }
+
+    function finishPortrait() {
+      console.log('Portrait complete! Chosen card:', l7ChosenCard);
+      // TODO: show final screen / save to gallery
+    }
   </script>
 
 </body>
